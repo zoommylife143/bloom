@@ -7,8 +7,9 @@ _Last updated: 2026-11-16 (session 1)_
 | Track | Web (ADR 0001) |
 | Product | Both: patient intake + clinic dashboard (ADR 0001) |
 | Mode | Hackathon-fast (ADR 0002) |
-| Phase | 1 Design (compressed), awaiting the Gate 1-3 review |
-| Current step | Figma design built; waiting on the GitHub repo and gate approvals |
+| Phase | 4 Build: ready to start |
+| Current step | Plan step 2: repo scaffold (Flutter Web + FastAPI/LangGraph + Docker Compose) |
+| Repo | https://github.com/zoommylife143/bloom (private), branch main |
 
 ## Figma
 - File: https://www.figma.com/design/0lWIv5IY18QemXtzP3YaTE (team: Anitha's team)
@@ -33,7 +34,6 @@ _Last updated: 2026-11-16 (session 1)_
 - Integration resources request: https://claude.ai/artifact/9ZMvemAWUq5jy21UXU8vLV
 
 ## Blockers
-- GitHub repo zoommylife143/bloom not created yet. This workspace can't create repos, and the built-in browser needs a GitHub sign-in by srinivas.
 - Flutter/Dart SDK not installed in the cloud workspace.
 - flutter-skills (Riverpod) is disabled for this project in .claude/settings.json. To disable it account-wide, turn it off in claude.ai plugin settings.
 - setup-claude-connectors.sh and the app-playbook kit (`docs/templates/`, `approvals/TEMPLATE.md`) are not in this workspace. The Design and Development Plan stands in for them (srinivas, 2026-11-16).
