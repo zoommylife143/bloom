@@ -1,0 +1,14 @@
+{
+  "enabledPlugins": {
+    "flutter-skills@anthropic-plugin-directory": false
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./server/.env)",
+      "Edit(./.env)",
+      "Edit(./.env.*)"
+    ]
+  }
+}
