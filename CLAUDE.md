@@ -8,7 +8,8 @@ Boat Hackathon SF 2026 (Zoom My Life). The final submission deadline is Fri 2026
 - Status: `docs/STATUS.md`. Update it at the end of every session.
 
 ## Stack (ADR 0002)
-- `apps/bloom_web`: Flutter Web, Material 3, flutter_bloc, go_router. Styling comes from ThemeData in `packages/bloom_ui`.
+- `apps/patient` (P screens) and `apps/clinic` (D and S screens): Flutter Web, Material 3, flutter_bloc, go_router, feature folders `presentation/domain/data` (ADR 0003). Shared code lives in `packages/bloom_ui`, `core_domain`, `core_data` and `l10n`.
+- Screen index and Figma node IDs: `docs/02-app-flow.md`. Sponsor steps: `docs/sponsor-runbook.md`.
 - `server/`: Python FastAPI + LangGraph, SQLite, pytest, run with `uv`.
 - Deploy: Docker Compose on a Boat.dev VM.
 
@@ -25,5 +26,5 @@ Boat Hackathon SF 2026 (Zoom My Life). The final submission deadline is Fri 2026
 
 ## Commands
 - Backend: `cd server && uv run pytest`, `uv run uvicorn app.main:app --reload`
-- Frontend: `cd apps/bloom_web && flutter analyze && flutter test && flutter build web`
+- Frontend: in `apps/patient` or `apps/clinic`: `flutter analyze && flutter test && flutter build web`
 - Deploy: `docker compose up -d --build` on the Boat VM
