@@ -63,6 +63,17 @@ Submit the boat "Bloom", crew, the public X post URL, the app URL, and a video o
 
 The X post must use #boathackathon and tag @boathackathon and @teamily_ai. Also tag each sponsor whose prize you want: @boatdotdev, @getcontextdev and @nytokenexchange.
 
+Form fields ("Name your boat"):
+- Required: boat name, captain's log, participation plan (in person or remote), and project logo (PNG/JPEG, up to 4 MB).
+- Needed to submit: project link, demo video link (X or YouTube), and the X post link.
+- Optional: team boat image.
+
+The form can be saved now and the links added later. Submit from the regular builder sign-in; saves in preview mode don't count. The repo is private, so use the live app URL as the project link, or make the repo public.
+
+TrustedRouter: sign up at TrustedRouter.com with Google for 1 million free tokens. GLM 5.3 Flash is available there and counts toward the $1,000 prize.
+
+Wi-Fi aboard the Klamath: see the image Travis posted in the group chat.
+
 Contacts: Travis at travis@codemkrs.com or the group chat. Context.dev credits: michael@context.dev or @michael_chomsky on X.
 
 Boat.dev billing: free participant credits are not confirmed. Ask Travis or the Boat.dev team about the repeat charge before paying again.
