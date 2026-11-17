@@ -59,4 +59,12 @@ Keys live only in `.env` on the VM and on laptops. Never put them in git or chat
 | Sat | Demo from the fork | all |
 
 ## 6. Submission (BoatHackathon.com/builders)
-Submit the boat "Bloom", crew, the X post URL with #boathackathon @boathackathon @teamily, the app URL, and a video of at most 2 minutes. Tag @nytokenexchange, @boatdotdev and Context.dev.
+Submit the boat "Bloom", crew, the public X post URL, the app URL, and a video of at most 2 minutes. The upload form is on that page. The deadline is Fri Nov 20, 5:00 PM, and demo picks are rolling, so submit early.
+
+The X post must use #boathackathon and tag @boathackathon and @teamily_ai. Also tag each sponsor whose prize you want: @boatdotdev, @getcontextdev and @nytokenexchange.
+
+Contacts: Travis at travis@codemkrs.com or the group chat. Context.dev credits: michael@context.dev or @michael_chomsky on X.
+
+Boat.dev billing: free participant credits are not confirmed. Ask Travis or the Boat.dev team about the repeat charge before paying again.
+
+$1,000 LetsEncrypt.AI prize: it goes to the most useful app whose users use encrypted AI tokens. The organizers say TrustedRouter's GLM 5.3 Flash can be used. Confirm that the route is confidential before labeling it private in D03.
