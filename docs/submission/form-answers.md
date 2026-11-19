@@ -56,17 +56,17 @@ Before opening the form
 - [ ] `server/scripts/live_check.py --base https://box-node-65cdd7262c0153ea-80.on.boat.dev` passes (S1 reaches a brief, S7 goes urgent R2).
 - [ ] D05 negative test shows **Refused** (not "Provider error").
 - [ ] VM won't auto-stop before judging (`--no-auto-stop` or `boat extend`).
-- [ ] Demo video is ≤ 2:00, plays signed out (unlisted YouTube or public X), and has no real names or health data.
+- [x] Demo video is ≤ 2:00, plays signed out (unlisted YouTube or public X), and has no real names or health data.
 - [x] X thread is posted (2026-11-19): each post under 280 characters (counts in `docs/submission.md`); the @handles are checked against the sponsors' real accounts; post 5/ has the real video and app links.
 - [ ] Wording check on everything pasted: no "HIPAA compliant", no unqualified "secure", no "encrypted", no "data never leaves the app"; the GLM-5.3 Flash route is called zero-data-retention, not confidential.
 
 In the form
 - [ ] Sign in from the **regular builder sign-in** at BoatHackathon.com/builders, **not preview mode** (saves in preview mode don't count).
-- [ ] Every field filled; no `TODO`, `<VM host URL>` or `<video link>` placeholder left anywhere.
+- [x] Every field filled; no `TODO`, `<VM host URL>` or `<video link>` placeholder left anywhere.
 - [ ] Logo uploaded is `bloom-logo-1024.png` and the preview shows it.
 - [ ] Project link is `https://box-node-65cdd7262c0153ea-80.on.boat.dev/` and opens the landing page (not GitHub).
 - [ ] Captain's log pasted in full (check the end: "…not a medical device.").
-- [ ] Click Submit, then reload the page and confirm the submission shows as submitted (not a draft).
+- [x] Click Submit, then reload the page and confirm the submission shows as submitted (not a draft).
 - [ ] Screenshot the confirmation; note the time (must be before 3:00 PM PT, Fri 2026-11-20).
 
 After submitting

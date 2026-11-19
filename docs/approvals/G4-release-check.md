@@ -1,7 +1,7 @@
 # Gate 4: release check
 
-- **Decision:** Pending srinivas
-- **Approver:** srinivas sreepada, in chat (not yet given)
+- **Decision:** Approved
+- **Approver:** srinivas sreepada, in chat, 2026-11-19, 12:02 PT
 - **Date of check:** 2026-11-19 (submission deadline Fri 2026-11-20, 3:00 PM PT per docs/submission.md)
 - **Mode:** hackathon-fast (ADR 0002). Checklist from plan §8 (privacy controls, claims policy) and §12 (submission checklist), the 30-Hour Build Plan's Friday checklist, and the CLAUDE.md rules.
 - **Branch checked:** `build/scaffold` (working tree clean before this check, 13 commits in history)
@@ -68,4 +68,10 @@ These are human steps. The code check cannot verify them; they stay open until d
 7. **Key rotation** for TrustedRouter and Context.dev after the demo (docs/STATUS.md).
 
 ## Approval
-Pending srinivas. G4 is not approved until srinivas confirms in chat and the human submission items above are done.
+Approved by srinivas sreepada in chat, 2026-11-19, 12:02 PT ("approve now").
+
+At approval:
+- Human submission items reported done by srinivas: demo video posted, submission form submitted, X thread posted.
+- Open issue 2 (P01 wording) fixed and live on both VMs (redeployed at `4727859`; smoke 27/27 and live check S1, S3, S7 PASS on each public URL).
+- Open issue 6 (branch): resolved; `main` and `build/scaffold` point to the same commit, and both VMs deploy `main`.
+- Still open and accepted for the hackathon: issues 3 (plan §12 paragraph; the submitted captain's log is accurate), 4 (private mode not demonstrable end to end), 5 (clinician review of keyword lists) and 7 (key rotation after the demo).
