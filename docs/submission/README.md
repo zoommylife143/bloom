@@ -10,18 +10,19 @@ Everything needed to submit Bloom to **Boat Hackathon SF 2026**. Deadline: **Fri
 
 | Field | Value |
 | --- | --- |
-| Project link | https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ |
-| Clinic app (mention in captain's log) | https://box-node-65cdd7262c0153ea-80.on.boat.dev/doctor/ |
+| Project link | https://box-node-65cdd7262c0153ea-80.on.boat.dev/ (landing page with Patient and Doctor buttons) |
+| Direct app links | Patient https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ · Doctor https://box-node-65cdd7262c0153ea-80.on.boat.dev/doctor/ |
 | Demo video link | Upload `bloom-demo-voiceover.mp4` to YouTube (unlisted), paste that link |
 | X post link | Link to post 1/ of the thread |
 | Logo | `bloom-logo-1024.png` |
 
-Backup app (only if the main one is down): https://box-node-ea80fef589949d9a-80.on.boat.dev/intake/ (archives 2026-11-21 09:29 UTC).
+Backup (only if the main one is down): https://box-node-ea80fef589949d9a-80.on.boat.dev/ (archives 2026-11-21 09:29 UTC).
 
 ## Files in this folder
 
 | File | What it is |
 | --- | --- |
+| `captains-log.md` | Project description written as a captain's log, ready to paste |
 | `form-answers.md` | Paste-ready answers for every form field, plus the pre-submit checklist |
 | [`../submission.md`](../submission.md) | Captain's log, X thread text, 2-minute video script, prize checklist |
 | `bloom-demo-voiceover.mp4` | **Demo video to submit** (1:54, captions + narration of each partner's role) |

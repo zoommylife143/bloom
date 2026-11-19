@@ -9,8 +9,8 @@ _Last updated: 2026-11-19 (session 5)_
 | Mode | Hackathon-fast (ADR 0002) |
 | Phase | 4 Build done; deployed on Boat; G4 release check written, pending srinivas |
 | Current step | Deployed: VM + demo fork pass smoke 25/25 and live check (S1, S3 cited brief; S7 urgent R2). G4 check: 834 tests pass, analyze clean, no FAIL items. Submission kit ready (docs/submission/). Demo video recorded (docs/submission/bloom-demo.mp4) plus a narrated version (docs/submission/bloom-demo-voiceover.mp4, submit this one); X thread posted 2026-11-19. README, partner architecture deck and Zoom My Life branding done. Next: upload the narrated video (unlisted YouTube), fill in video link, X post link and remaining form fields, submit by Fri 2026-11-20 3:00 PM PT. |
-| Demo app (submit this) | https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ and /doctor/ (fork bx_x6rcgdqh, no auto-stop) |
-| Backup app | https://box-node-ea80fef589949d9a-80.on.boat.dev/intake/ and /doctor/ (VM bx_2dpym7ge, snapshot bloom-demo; archives 2026-11-21 09:29 UTC) |
+| Demo app (submit this) | https://box-node-65cdd7262c0153ea-80.on.boat.dev/ (landing page: Patient → /intake/, Doctor → /doctor/) (fork bx_x6rcgdqh, no auto-stop) |
+| Backup app | https://box-node-ea80fef589949d9a-80.on.boat.dev/ (same landing page) (VM bx_2dpym7ge, snapshot bloom-demo; archives 2026-11-21 09:29 UTC) |
 | Repo | https://github.com/zoommylife143/bloom (private), branch main |
 
 ## Figma
@@ -44,7 +44,7 @@ _Last updated: 2026-11-19 (session 5)_
 - Boat VM: DONE 2026-11-19. VM bx_2dpym7ge at ed6245a, snapshot bloom-demo, fork bx_x6rcgdqh (--no-auto-stop), both public on port 80.
 - Slow intake: DONE. S1 via public host, slowest turn 14.9 s, no timeout (proxy limit not reached, so still unknown above 15 s).
 - Submission form: logo, app URL, captain's log, X thread and form answers ready (docs/submission/form-answers.md). X thread posted 2026-11-19. Still needed: participation, crew, demo video link, X post link (to post 1/), then submit.
-- Approve G4 (docs/approvals/G4-release-check.md). Its suggested P01 wording fix is DONE in the repo (session 5), but the deployed demo fork still shows the old line until it is redeployed (decide whether to redeploy before judging).
+- Approve G4 (docs/approvals/G4-release-check.md). Its suggested P01 wording fix is DONE and live (both VMs redeployed at 4727859, session 5).
 - Rotate the TrustedRouter and Context.dev keys after the demo.
 
 ## Blockers
@@ -79,6 +79,8 @@ _Last updated: 2026-11-19 (session 5)_
 - Partner architecture deck published (link under Source documents); private until srinivas shares it.
 - Narrated demo video: docs/submission/bloom-demo-voiceover.mp4 (1:54, same captions). Voice is Piper TTS generated locally (en_US-lessac-medium); one narration line per segment explains which partner works in that step. The original silent video is kept.
 - G4 suggested fix 2 applied: P01 dev-route line now reads "Your answers go to an AI service that says it does not keep them (zero data retention, operator-declared)." (app_en.arb:39, l10n regenerated). Patient app tests: 191 pass.
+
+- Landing page at / (deploy/landing/): one link with Patient and Doctor buttons. Both VMs redeployed at 4727859 (backup first): smoke 27/27 and live check S1, S3, S7 PASS on each public URL; corrected P01 line confirmed in the live patient build.
 
 ## Open questions
 - NYTE: confidential model ID, per-request evidence fields, refusal error code, tool/JSON support.
