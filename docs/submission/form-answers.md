@@ -55,7 +55,7 @@ Before opening the form
 - [ ] D05 negative test shows **Refused** (not "Provider error").
 - [ ] VM won't auto-stop before judging (`--no-auto-stop` or `boat extend`).
 - [ ] Demo video is ≤ 2:00, plays signed out (unlisted YouTube or public X), and has no real names or health data.
-- [ ] X thread is posted: each post under 280 characters (counts in `docs/submission.md`); the @handles are checked against the sponsors' real accounts; post 5/ has the real video and app links.
+- [x] X thread is posted (2026-11-19): each post under 280 characters (counts in `docs/submission.md`); the @handles are checked against the sponsors' real accounts; post 5/ has the real video and app links.
 - [ ] Wording check on everything pasted: no "HIPAA compliant", no unqualified "secure", no "encrypted", no "data never leaves the app"; the GLM-5.3 Flash route is called zero-data-retention, not confidential.
 
 In the form
