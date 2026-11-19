@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloom: Partner Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400..700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>:root {
+  --ink: #1F1A1D;
+  --ink-soft: #5E5560;
+  --canvas: #FBF8F4;
+  --subtle: #F3EEE7;
+  --plum: #6B2D5C;
+  --plum-dark: #2A1426;
+  --plum-tint: #F3E6EF;
+  --green: #2F6B52;
+  --green-tint: #E3F0E8;
+  --red: #B42318;
+  --red-tint: #FEF3F2;
+  --line: #DCD3C8;
+  --on-dark: #F6EEF3;
+  --on-dark-soft: #D9C4D2;
+}
+
+body { font-family: 'DM Sans', Arial, sans-serif; color: var(--ink); }
+
+section {
+  padding: 128px;
+  background: var(--canvas);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  box-sizing: border-box;
+}
+section.alt { background: var(--subtle); }
+section.dark { background: var(--plum-dark); color: var(--on-dark); }
+section.withfoot { padding: 128px 128px 160px; }
+
+h1 { font-family: 'Fraunces', Georgia, serif; font-size: 112px; font-weight: 600; line-height: 1.02; letter-spacing: -1px; }
+h2 { font-family: 'Fraunces', Georgia, serif; font-size: 64px; font-weight: 600; line-height: 1.08; color: var(--ink); }
+h3 { font-family: 'DM Sans', Arial, sans-serif; font-size: 32px; font-weight: 700; line-height: 1.2; color: var(--ink); }
+p { font-size: 30px; line-height: 1.4; color: var(--ink-soft); }
+li { font-size: 30px; line-height: 1.45; color: var(--ink-soft); }
+
+section.dark h1, section.dark h2, section.dark h3 { color: var(--on-dark); }
+section.dark p, section.dark li { color: var(--on-dark-soft); }
+
+.eyebrow { font-size: 24px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--plum); }
+section.dark .eyebrow { color: #E7B9D8; }
+.head { display: flex; flex-direction: column; gap: 16px; }
+.lede { font-size: 32px; color: var(--ink-soft); max-width: 1400px; }
+
+/* cards */
+.row { display: flex; gap: 32px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+.card { background: #FFFDFB; border: 2px solid var(--line); border-radius: 20px; padding: 36px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+section.alt .card { background: var(--canvas); }
+.card p { font-size: 26px; line-height: 1.4; }
+.card .tag { font-size: 24px; font-weight: 700; color: var(--plum); }
+.card.plum { background: var(--plum-tint); border-color: #D9B7CE; }
+.card.green { background: var(--green-tint); border-color: #B7D6C4; }
+.card.red { background: var(--red-tint); border-color: #F2C3BE; }
+.card.green .tag { color: var(--green); }
+.card.red .tag { color: var(--red); }
+
+/* partner slides */
+.partner { display: grid; grid-template-columns: 560px 1fr; gap: 72px; flex: 1; }
+.partner-side { display: flex; flex-direction: column; gap: 24px; }
+.partner-name { font-family: 'Fraunces', Georgia, serif; font-size: 64px; font-weight: 600; line-height: 1.05; color: var(--ink); }
+.role { font-size: 30px; line-height: 1.4; color: var(--ink-soft); }
+.pill { align-self: flex-start; background: var(--plum); color: #FBF8F4; font-size: 24px; font-weight: 700; padding: 10px 22px; border-radius: 999px; }
+.pill.green { background: var(--green); }
+.files { font-family: 'DM Sans', Arial, sans-serif; font-size: 24px; color: var(--plum); line-height: 1.5; }
+.points { display: flex; flex-direction: column; gap: 0; }
+.point { display: flex; gap: 28px; padding: 26px 0; border-top: 2px solid var(--line); }
+.point .n { font-family: 'Fraunces', Georgia, serif; font-size: 40px; font-weight: 600; color: var(--plum); width: 56px; flex: none; line-height: 1.1; }
+.point h3 { font-size: 30px; }
+.point p { font-size: 26px; margin-top: 6px; }
+.point-body { flex: 1; }
+
+/* tables */
+table { font-family: 'DM Sans', Arial, sans-serif; font-size: 24px; color: var(--ink); width: 100%; }
+th { font-weight: 700; color: var(--plum); text-align: left; }
+
+/* footer */
+.foot { position: absolute; left: 128px; bottom: 64px; width: 1664px; display: flex; justify-content: space-between; }
+.foot p { font-size: 24px; color: #8A7F86; }
+section.dark .foot p { color: #A98FA1; }
+
+/* diagram boxes */
+.box { position: absolute; box-sizing: border-box; border-radius: 18px; padding: 20px 24px; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+.box h3 { font-size: 28px; }
+.box p { font-size: 24px; line-height: 1.3; }
+.box.plain { background: #FFFDFB; border: 2px solid var(--line); }
+.box.plum { background: var(--plum-tint); border: 2px solid #D9B7CE; }
+.box.green { background: var(--green-tint); border: 2px solid #B7D6C4; }
+.box.red { background: var(--red-tint); border: 2px solid #F2C3BE; }
+.box.ink { background: var(--plum); border: 2px solid var(--plum); }
+.box.ink h3 { color: #FBF8F4; }
+.box.ink p { color: #EBD7E5; }
+.zone { position: absolute; box-sizing: border-box; border: 2px dashed #C9B9C4; border-radius: 24px; }
+.zone-label { position: absolute; font-size: 24px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--plum); }
+.stage { position: relative; flex: 1; }
+x-connector { color: #8A6A80; border-width: 3px; }
+x-connector.green { color: var(--green); }
+x-connector.red { color: var(--red); }
+
+/* big numbers */
+.stat { display: flex; flex-direction: column; gap: 8px; flex: 1; border-top: 4px solid var(--plum); padding-top: 24px; }
+.stat .num { font-family: 'Fraunces', Georgia, serif; font-size: 96px; font-weight: 600; line-height: 1; color: var(--plum); }
+.stat .lbl { font-size: 26px; color: var(--ink-soft); }
+
+/* Zoom My Life branding */
+.brand { position: absolute; left: 1712px; top: 36px; width: 80px; height: 80px; object-fit: contain; }
+.logo-chip { position: absolute; left: 1560px; top: 96px; width: 232px; height: 232px; box-sizing: border-box; padding: 16px; background: #FBF8F4; border-radius: 28px; display: flex; align-items: center; justify-content: center; }
+.logo-chip img { width: 200px; height: 198px; object-fit: contain; }
+
+/* motion */
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+.in { animation: rise 600ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 110ms); }
+
+
+* { margin: 0; }
+html, body { background: #2b2b2b; }
+body > section { width: 1920px; height: 1080px; overflow: hidden; position: relative; margin: 0 auto 24px; }
+aside { display: none; }
+.in { animation: none !important; }
+.stage > .arrows { position: absolute; left: 0; top: 0; overflow: visible; }
+.stage > .box, .stage > .zone, .stage > .zone-label { z-index: 1; }
+.stage > .zone { z-index: 0; }
+th, td { padding: .35em .6em; text-align: left; border-bottom: 2px solid #DCD3C8; }
+table { border-collapse: collapse; border-top: 2px solid #DCD3C8; }
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { background: none; }
+  body > section { margin: 0; break-after: page; }
+}
+</style>
+</head><body>
+<section id="cover" class="dark withfoot" style="justify-content:space-between" data-transition="fade">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="logo-chip"><img src="zoom-my-life-logo.png" alt="Zoom My Life logo"></div>
+<p class="eyebrow">Zoom My Life · Boat Hackathon SF 2026 · Architecture deck</p>
+<div class="head">
+<h1 class="in" style="--i:0; max-width:1380px">Bloom: how partner platforms power a private AI gynecology copilot</h1>
+<p class="in" style="--i:2; font-size:36px; max-width:1300px">Boat.dev, NY Token Exchange TrustedRouter, GLM-5.3 Flash, Context.dev and Figma, and how each one helps satisfy the requirements</p>
+</div>
+<p style="font-size:24px">Synthetic data only · Not a medical device · Not HIPAA compliant</p>
+<aside>Bloom is a pre-visit intake and physician-brief agent for gynecology clinics. This deck walks through the architecture and shows, partner by partner, which requirement each platform satisfies and where it lives in the code.</aside>
+</section>
+<section id="requirements" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="head">
+<p class="eyebrow">The brief</p>
+<h2>Eight requirements shaped every architecture decision</h2>
+</div>
+<table>
+<tr><th style="width:5%">#</th><th style="width:43%">Requirement</th><th style="width:27%">Satisfied by</th><th style="width:25%">Code</th></tr>
+<tr><td>1</td><td>Build and run the app on a Boat.dev VM</td><td>Boat.dev</td><td>docker-compose.yml, scripts/deploy.sh</td></tr>
+<tr><td>2</td><td>Route every AI call through a privacy floor; private mode fails closed</td><td>NY Token Exchange TrustedRouter</td><td>server/app/router.py</td></tr>
+<tr><td>3</td><td>Show per-call evidence: route, policy, receipt, latency</td><td>TrustedRouter receipts</td><td>server/app/attestation.py</td></tr>
+<tr><td>4</td><td>Use GLM-5.3 Flash for useful clinical work</td><td>LetsEncrypt.AI model</td><td>TR_MODEL_ID, graph.py</td></tr>
+<tr><td>5</td><td>Cite real guidelines, searched without patient text</td><td>Context.dev</td><td>retrieve.py, deidentify.py</td></tr>
+<tr><td>6</td><td>Red flags never depend on the model</td><td>Deterministic server rules</td><td>server/app/safety.py</td></tr>
+<tr><td>7</td><td>Every AI output is a draft with stored provenance</td><td>Clinician review (D02)</td><td>store.py, apps/clinic</td></tr>
+<tr><td>8</td><td>One design source for screens and tokens</td><td>Figma</td><td>packages/bloom_ui</td></tr>
+</table>
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Requirements: hackathon prize criteria and CLAUDE.md rules</p></div>
+<aside>Four of these come from the hackathon partner prizes (Boat, TrustedRouter, LetsEncrypt.AI, Context.dev). The other four are product rules from CLAUDE.md that the architecture enforces in code. The rest of the deck maps each one to a partner and a file.</aside>
+</section>
+<section id="overview" class="alt withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="head">
+<p class="eyebrow">Architecture</p>
+<h2>One Boat VM, two gateways out</h2>
+</div>
+<div class="stage"><svg class="arrows" width="1664" height="660" viewBox="0 0 1664 660" aria-hidden="true"><defs><marker id="h8A6A80" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8A6A80"/></marker><marker id="t8A6A80" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M10 0L0 5L10 10z" fill="#8A6A80"/></marker><marker id="hB42318" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#B42318"/></marker><marker id="tB42318" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M10 0L0 5L10 10z" fill="#B42318"/></marker><marker id="h2F6B52" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2F6B52"/></marker><marker id="t2F6B52" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M10 0L0 5L10 10z" fill="#2F6B52"/></marker></defs><path d="M320.0 140.0 L440.0 140.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M320.0 340.0 L440.0 200.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M160.0 470.0 L160.0 410.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M770.0 220.0 L770.0 270.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)" marker-start="url(#t8A6A80)"/><path d="M770.0 450.0 L770.0 500.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)" marker-start="url(#t8A6A80)"/><path d="M1100.0 330.0 L1220.0 115.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M1442.0 200.0 L1442.0 240.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M1100.0 410.0 L1220.0 530.0" fill="none" stroke="#2F6B52" stroke-width="3" marker-end="url(#h2F6B52)"/></svg>
+<div class="zone" style="left:400px; top:0; width:740px; height:630px"></div>
+<p class="zone-label" style="left:440px; top:22px; width:660px">Boat.dev VM · Docker Compose</p>
+<div class="box plain" style="left:0; top:70px; width:320px; height:140px"><h3>Patient</h3><p>Browser · /intake/</p></div>
+<div class="box plain" style="left:0; top:270px; width:320px; height:140px"><h3>Clinician</h3><p>Browser · /doctor/</p></div>
+<div class="box plum" style="left:0; top:470px; width:320px; height:160px"><h3>Figma</h3><p>Screens and tokens → bloom_ui</p></div>
+<div class="box plain" style="left:440px; top:80px; width:660px; height:140px"><h3>web · nginx on port 80</h3><p>Flutter Web apps at /intake/ and /doctor/, proxy /api/</p></div>
+<div class="box ink" style="left:440px; top:270px; width:660px; height:180px"><h3>api · FastAPI + LangGraph</h3><p>Safety rules R1–R6 · intake · de-identify · retrieve · brief · trust events</p></div>
+<div class="box plain" style="left:440px; top:500px; width:660px; height:115px"><h3>SQLite on the bloom-data volume</h3><p>Sessions, briefs, provenance, audit</p></div>
+<div class="box plum" style="left:1220px; top:30px; width:444px; height:170px"><h3>TrustedRouter (NYTE)</h3><p>Privacy floor zdr / confidential, signed receipts</p></div>
+<div class="box plum" style="left:1220px; top:240px; width:444px; height:150px"><h3>GLM-5.3 Flash</h3><p>Intake turns and briefs</p></div>
+<div class="box green" style="left:1220px; top:440px; width:444px; height:180px"><h3>Context.dev</h3><p>Guideline search: ACOG, USPSTF, CDC only</p></div>
+
+
+
+
+
+
+
+
+</div>
+<aside>Everything Bloom runs is on one Boat.dev VM: nginx serves both Flutter Web apps and proxies /api to the FastAPI server, which is internal only. The server is the only component that talks to the outside: AI calls go to TrustedRouter, which forwards to GLM-5.3 Flash under a privacy floor; guideline searches go to Context.dev. The browser never sees a key and never chooses the privacy mode. Figma is upstream of the code: its tokens become the bloom_ui package both apps use.</aside>
+</section>
+<section id="pipeline" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="head">
+<p class="eyebrow">One patient turn · LangGraph</p>
+<h2>Rules wrap every model call</h2>
+</div>
+<div class="stage"><svg class="arrows" width="1664" height="660" viewBox="0 0 1664 660" aria-hidden="true"><defs><marker id="h8A6A80" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8A6A80"/></marker><marker id="t8A6A80" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M10 0L0 5L10 10z" fill="#8A6A80"/></marker><marker id="hB42318" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#B42318"/></marker><marker id="tB42318" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M10 0L0 5L10 10z" fill="#B42318"/></marker><marker id="h2F6B52" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2F6B52"/></marker><marker id="t2F6B52" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M10 0L0 5L10 10z" fill="#2F6B52"/></marker></defs><path d="M360.0 105.0 L434.0 105.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M794.0 105.0 L868.0 105.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M1228.0 105.0 L1302.0 105.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M180.0 190.0 V325.0 H434.0" fill="none" stroke="#B42318" stroke-width="3" marker-end="url(#hB42318)"/><path d="M1048.0 190.0 L1048.0 260.0" fill="none" stroke="#B42318" stroke-width="3" marker-end="url(#hB42318)"/><path d="M1483.0 190.0 L1483.0 460.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M1302.0 545.0 L1228.0 545.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M868.0 545.0 L794.0 545.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/><path d="M434.0 545.0 L360.0 545.0" fill="none" stroke="#8A6A80" stroke-width="3" marker-end="url(#h8A6A80)"/></svg>
+<div class="box green" style="left:0; top:20px; width:360px; height:170px"><h3>safety_pre</h3><p>Rules R1–R6 on the patient’s text</p></div>
+<div class="box ink" style="left:434px; top:20px; width:360px; height:170px"><h3>intake</h3><p>GLM via TrustedRouter, JSON mode</p></div>
+<div class="box green" style="left:868px; top:20px; width:360px; height:170px"><h3>safety_post</h3><p>Rules on the updated record</p></div>
+<div class="box plain" style="left:1302px; top:20px; width:362px; height:170px"><h3>save_turn</h3><p>Idempotent; trust event stored</p></div>
+<div class="box red" style="left:434px; top:260px; width:794px; height:130px"><h3>urgent → P03</h3><p>Chat locks and urgent-care steps show. No model call.</p></div>
+<div class="box green" style="left:1302px; top:460px; width:362px; height:170px"><h3>deidentify</h3><p>Queries from structured fields only</p></div>
+<div class="box plum" style="left:868px; top:460px; width:360px; height:170px"><h3>retrieve</h3><p>Context.dev search, cached evidence</p></div>
+<div class="box ink" style="left:434px; top:460px; width:360px; height:170px"><h3>brief</h3><p>GLM drafts; uncited claims dropped</p></div>
+<div class="box plain" style="left:0; top:460px; width:360px; height:170px"><h3>Clinician D02</h3><p>Confirm, edit or reject</p></div>
+
+
+
+
+
+
+
+
+
+</div>
+<aside>Green boxes are deterministic code, dark plum boxes call GLM-5.3 Flash through TrustedRouter, and the light plum box calls Context.dev. A red flag can stop the turn before the model is ever called (safety_pre) or right after it (safety_post). When intake is complete, the graph de-identifies, retrieves guidelines and drafts the brief; sanitize_brief removes any citation that was not actually retrieved. Bad model JSON gets one repair call, then a fixed fallback question, so the patient never sees an error page.</aside>
+</section>
+<section id="boat" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<p class="eyebrow">Partner 1 · Hosting</p>
+<div class="partner">
+<div class="partner-side">
+<p class="partner-name">Boat.dev</p>
+<p class="role">The computer Bloom is built on and served from: one VM runs the whole stack, and a frozen fork serves the demo.</p>
+<p class="pill">Requirement 1</p>
+<p class="files">docker-compose.yml<br>scripts/deploy.sh · scripts/smoke.sh<br>deploy/nginx.conf · web.Dockerfile</p>
+</div>
+<div class="points">
+<div class="point in" style="--i:0"><p class="n">1</p><div class="point-body"><h3>Docker Compose on one VM</h3><p>nginx serves both Flutter apps and proxies /api to an internal FastAPI container; SQLite sits on a volume.</p></div></div>
+<div class="point in" style="--i:1"><p class="n">2</p><div class="point-body"><h3>Public HTTPS host on port 80</h3><p>boat host … --public exposes the VM; nginx listens on IPv4 and IPv6 for Boat’s IPv6 address.</p></div></div>
+<div class="point in" style="--i:2"><p class="n">3</p><div class="point-body"><h3>One-command deploy with checks</h3><p>deploy.sh builds, waits for a healthy API, confirms the database is on the volume and runs 25 smoke checks.</p></div></div>
+<div class="point in" style="--i:3"><p class="n">4</p><div class="point-body"><h3>boat fork for the demo</h3><p>A frozen copy with --no-auto-stop serves judging, while the original VM keeps a snapshot as backup.</p></div></div>
+</div>
+</div>
+<aside>Boat.dev is the only place Bloom runs. The API is never exposed directly; only nginx is public. The demo fork is a frozen snapshot of a passing build, so last-minute changes can't break the judged copy. The original VM stays as a backup with the bloom-demo snapshot.</aside>
+</section>
+<section id="trustedrouter" class="alt withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<p class="eyebrow">Partner 2 · Private inference</p>
+<div class="partner">
+<div class="partner-side">
+<p class="partner-name">NY Token Exchange TrustedRouter</p>
+<p class="role">The only path from Bloom to a model. The server sets the privacy floor; the browser never can.</p>
+<p class="pill">Requirements 2 and 3</p>
+<p class="files">server/app/router.py<br>server/app/attestation.py<br>apps/clinic · D03 panel</p>
+</div>
+<div class="points">
+<div class="point in" style="--i:0"><p class="n">1</p><div class="point-body"><h3>OpenAI-compatible gateway</h3><p>The OpenAI SDK points at api.trustedrouter.com/v1, so one client handles every intake turn and brief.</p></div></div>
+<div class="point in" style="--i:1"><p class="n">2</p><div class="point-body"><h3>Privacy floor on every request</h3><p>provider = {min_privacy: zdr or confidential, allow_fallbacks: false}, chosen by BLOOM_MODE on the server.</p></div></div>
+<div class="point in" style="--i:2"><p class="n">3</p><div class="point-body"><h3>Signed receipts and request IDs</h3><p>Bloom asks for x-inference-receipt and stores the receipt, route, request ID and latency per call.</p></div></div>
+<div class="point in" style="--i:3"><p class="n">4</p><div class="point-body"><h3>Shown to the clinician (D03)</h3><p>The Privacy &amp; Trust panel lists each call. The receipt is shown, but Bloom doesn’t verify its signature.</p></div></div>
+</div>
+</div>
+<aside>TrustedRouter is how requirement 2 (privacy floor) and requirement 3 (per-call evidence) are met. A TrustEvent row is stored for every model or retrieval call: metadata only, never clinical text. Be honest about the limit: Bloom displays the gateway’s signed receipt but does not verify the signature itself.</aside>
+</section>
+<section id="failclosed" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="head">
+<p class="eyebrow">TrustedRouter in practice</p>
+<h2>If it can’t be private, Bloom says no</h2>
+</div>
+<div class="grid3" style="flex:1">
+<div class="card plum in" style="--i:0">
+<p class="tag">Dev mode · the live demo</p>
+<h3>Zero-data-retention route</h3>
+<p>z-ai/glm-5.3-flash with min_privacy = zdr (operator-declared). One retry on 429, 503 or 529, same model, after 2 s. D03 labels it ZDR, not confidential.</p>
+</div>
+<div class="card red in" style="--i:1">
+<p class="tag">Private mode</p>
+<h3>Confidential route or nothing</h3>
+<p>min_privacy = confidential, no fallbacks, no retries. With no confidential model configured, every AI call returns 502 confidential_route_unavailable and nothing is sent anywhere else.</p>
+</div>
+<div class="card green in" style="--i:2">
+<p class="tag">Negative test · D05</p>
+<h3>Proof on demand</h3>
+<p>The clinic asks for a confidential floor on a provider that is only ZDR. TrustedRouter answers HTTP 400 “No route candidates match”; D05 shows Refused after exactly one call.</p>
+</div>
+</div>
+<p style="font-size:26px">Tests assert that a refusal is never followed by a second model call, and that a provider 5xx shows as an error, not a refusal.</p>
+<aside>This is the heart of requirement 2. Private mode fails closed by design: today PRIVATE_MODEL_ID is empty because NYTE has not named a confidential route, so private mode refuses everything. The demo runs in dev mode, and the UI says so plainly. The D05 negative test shows the refusal path live.</aside>
+</section>
+<section id="glm" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<p class="eyebrow">Partner 3 · The model</p>
+<div class="partner">
+<div class="partner-side">
+<p class="partner-name">GLM-5.3 Flash · LetsEncrypt.AI</p>
+<p class="role">The model behind every AI call: each intake question and each physician brief, always through TrustedRouter.</p>
+<p class="pill">Requirement 4</p>
+<p class="files">server/app/graph.py<br>server/app/prompts.py<br>TR_MODEL_ID in config.py</p>
+</div>
+<div class="points">
+<div class="point in" style="--i:0"><p class="n">1</p><div class="point-body"><h3>Structured intake in JSON mode</h3><p>response_format json_object, temperature 0.2, low reasoning effort; prior turns are sent back as JSON.</p></div></div>
+<div class="point in" style="--i:1"><p class="n">2</p><div class="point-body"><h3>Repair, then a safe fallback</h3><p>Bad JSON gets one repair call, then a fixed next question, so the patient never hits a dead end.</p></div></div>
+<div class="point in" style="--i:2"><p class="n">3</p><div class="point-body"><h3>Briefs that cite only what was found</h3><p>The model drafts from retrieved passages; sanitize_brief drops any citation that was not retrieved.</p></div></div>
+<div class="point in" style="--i:3"><p class="n">4</p><div class="point-body"><h3>Every output is a draft</h3><p>Model, route, prompt version and evidence are stored as provenance; the clinician confirms, edits or rejects.</p></div></div>
+</div>
+</div>
+<aside>Before the JSON-mode fix, 6 of 8 turns in scenario S1 failed because the model answered in prose. After JSON mode, prompt changes and the repair step, live runs of S1, S3 and S7 got valid JSON on the first pass every time. If the model is unavailable, a deterministic brief is written and clearly labelled “written without AI”.</aside>
+</section>
+<section id="contextdev" class="alt withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<p class="eyebrow">Partner 4 · Cited guidelines</p>
+<div class="partner">
+<div class="partner-side">
+<p class="partner-name">Context.dev</p>
+<p class="role">Finds the guideline passages a brief may cite, without ever seeing what the patient typed.</p>
+<p class="pill green">Requirement 5</p>
+<p class="files">server/app/deidentify.py<br>server/app/retrieve.py<br>server/app/monitor.py</p>
+</div>
+<div class="points">
+<div class="point in" style="--i:0"><p class="n">1</p><div class="point-body"><h3>De-identified queries only</h3><p>Built from structured fields, such as “cervical cancer screening interval age 30-39”; a planted-identifier test guards it.</p></div></div>
+<div class="point in" style="--i:1"><p class="n">2</p><div class="point-body"><h3>Allowlisted guideline sites</h3><p>Web search with includeDomains for ACOG, USPSTF and CDC, plus a second host check on every result.</p></div></div>
+<div class="point in" style="--i:2"><p class="n">3</p><div class="point-body"><h3>Evidence stored and cached</h3><p>Passage, URL and retrieval time are saved per brief and cached per query, so demos don’t spend credits.</p></div></div>
+<div class="point in" style="--i:3"><p class="n">4</p><div class="point-body"><h3>Monitor webhook (stretch)</h3><p>An HMAC-signed webhook can flag “guideline updated” on a brief; it’s off until a secret is set.</p></div></div>
+</div>
+</div>
+<aside>Context.dev satisfies requirement 5. The key design choice is that the search query is built from structured intake fields (age band, topic), never from free text, so no identifier can leak into a third-party search. The brief may cite only passages that were actually retrieved and stored. With no passage, D02 shows “No guideline retrieved”.</aside>
+</section>
+<section id="figma" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<p class="eyebrow">Partner 5 · Design source of truth</p>
+<div class="partner">
+<div class="partner-side">
+<p class="partner-name">Figma</p>
+<p class="role">Every screen is designed first in Figma; its tokens and components become the shared Flutter design system.</p>
+<p class="pill">Requirement 8</p>
+<p class="files">docs/design-tokens.json<br>docs/02-app-flow.md<br>packages/bloom_ui</p>
+</div>
+<div class="points">
+<div class="point in" style="--i:0"><p class="n">1</p><div class="point-body"><h3>Screen ID = frame name = route</h3><p>A01, P01–P04, D01–D06 and S01 are Figma frames and go_router route names, with node IDs in the screen index.</p></div></div>
+<div class="point in" style="--i:1"><p class="n">2</p><div class="point-body"><h3>Tokens exported to code</h3><p>16 primitives, 19 semantic colours, 10 dimensions and 8 text styles (Fraunces, DM Sans) feed bloom_ui.</p></div></div>
+<div class="point in" style="--i:2"><p class="n">3</p><div class="point-body"><h3>Shared components</h3><p>Button, StatusChip, ChatBubble, QuickReply, Banner, CitationLink, TrustRow and DecisionBar.</p></div></div>
+<div class="point in" style="--i:3"><p class="n">4</p><div class="point-body"><h3>States designed, not improvised</h3><p>Loading, generating, refused, model error, urgent, edited and rejected states exist as frames.</p></div></div>
+</div>
+</div>
+<aside>The rule in this repo is: a design change goes into Figma first, then the docs, then the code. Bloom tokens are mapped into a Material 3 ColorScheme in bloom_ui, so both Flutter apps share one look. This palette (plum, warm canvas, verified green, critical red) is the one used in this deck.</aside>
+</section>
+<section id="build" class="alt withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="head">
+<p class="eyebrow">How it was built</p>
+<h2>Planned in gates, built by agents, coordinated in the open</h2>
+</div>
+<div class="grid3" style="flex:1">
+<div class="card in" style="--i:0">
+<p class="tag">Claude Code</p>
+<h3>Eight scoped agent briefs</h3>
+<p>Router, safety, retrieval, Flutter foundation, graph and API, patient UI, clinic UI and deploy, each with its own prompt in docs/agent-prompts/.</p>
+</div>
+<div class="card in" style="--i:1">
+<p class="tag">Approval gates</p>
+<h3>G1 to G4 before release</h3>
+<p>Design, technical design and implementation plan were approved before any code; the G4 release check records tests and open fixes.</p>
+</div>
+<div class="card in" style="--i:2">
+<p class="tag">Teamily · Boat.dev</p>
+<h3>Daily status, coding aboard</h3>
+<p>Status posts and sponsor questions went to the Teamily group; boat ssh and boat prompt let work continue on the VM itself.</p>
+</div>
+</div>
+<aside>The team worked in hackathon-fast mode: one plan document stood in for the full doc set, and three compressed gates were approved on 16 November before code started. Each part of the system was built by a Claude Code agent from a written brief, which is why the code maps so cleanly onto the partner boundaries.</aside>
+</section>
+<section id="traceability" class="withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="head">
+<p class="eyebrow">Traceability</p>
+<h2>Every requirement has evidence you can check</h2>
+</div>
+<table>
+<tr><th style="width:5%">#</th><th style="width:30%">Requirement</th><th style="width:65%">Evidence</th></tr>
+<tr><td>1</td><td>Runs on Boat.dev</td><td>Demo fork and backup VM live; deploy smoke test 25 of 25</td></tr>
+<tr><td>2</td><td>Privacy floor, fails closed</td><td>D05 live: HTTP 400 → Refused after one call; tests assert no second call</td></tr>
+<tr><td>3</td><td>Per-call evidence</td><td>Receipt, request ID, route and latency stored per call and shown in D03</td></tr>
+<tr><td>4</td><td>GLM-5.3 Flash does real work</td><td>Live S1, S3, S7: valid JSON on the first pass for every turn</td></tr>
+<tr><td>5</td><td>Cited, de-identified guidelines</td><td>S1 and S3 briefs cite USPSTF; planted-identifier test passes</td></tr>
+<tr><td>6</td><td>Model-free red flags</td><td>S6–S10 end urgent on R1–R5; S7 live goes urgent on R2</td></tr>
+<tr><td>7</td><td>Drafts with provenance</td><td>Confirm, edit, reject stored; a second decision returns 409</td></tr>
+<tr><td>8</td><td>One design source</td><td>All routes tested at 390, 768 and 1440 px; tokens from Figma</td></tr>
+</table>
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Sources: docs/STATUS.md, docs/approvals/G4-release-check.md</p></div>
+<aside>This closes the loop on the requirements slide: each row names something that can be re-run or opened. The live check script, server/scripts/live_check.py, re-runs S1, S3 and S7 against any deployed copy.</aside>
+</section>
+<section id="evidence" class="alt withfoot">
+<img class="brand" src="zoom-my-life-logo.png" alt="Zoom My Life logo">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="head">
+<p class="eyebrow">Quality and honest limits</p>
+<h2>What we proved, and what we didn’t claim</h2>
+</div>
+<div class="row">
+<div class="stat in" style="--i:0"><p class="num">834</p><p class="lbl">Tests passing, analysis clean</p></div>
+<div class="stat in" style="--i:1"><p class="num">10</p><p class="lbl">Synthetic scenarios, S1–S10</p></div>
+<div class="stat in" style="--i:2"><p class="num">6</p><p class="lbl">Deterministic red-flag rules</p></div>
+<div class="stat in" style="--i:3"><p class="num">25/25</p><p class="lbl">Smoke checks on the live VM</p></div>
+</div>
+<div class="card red" style="flex:none">
+<p class="tag">Limits we state openly</p>
+<p>No confidential route exists yet, so the demo runs on zero data retention (operator-declared). Receipt signatures are shown, not verified. Red-flag keyword lists need clinician review. Synthetic data only; not a medical device; not HIPAA compliant.</p>
+</div>
+<aside>Numbers are from the G4 release check and the deploy logs on 19 November. The limits box matters as much as the numbers: the wording rules in the repo forbid claiming HIPAA compliance, encryption or that data never leaves the app.</aside>
+</section>
+<section id="closing" class="dark withfoot" style="justify-content:space-between">
+<div class="foot"><p>Confidential · © 2026 Zoom My Life · Do not distribute</p><p>Bloom · Partner architecture</p></div>
+<div class="logo-chip"><img src="zoom-my-life-logo.png" alt="Zoom My Life logo"></div>
+<p class="eyebrow">Built by Zoom My Life · Try it · synthetic data only</p>
+<div class="head">
+<h2 style="font-size:96px; max-width:1380px">Safety without the model. Privacy that fails closed. Citations you can check.</h2>
+</div>
+<div class="grid2">
+<div><h3>Patient app</h3><p style="font-size:26px">box-node-65cdd7262c0153ea-80.on.boat.dev/intake/</p></div>
+<div><h3>Clinic app</h3><p style="font-size:26px">box-node-65cdd7262c0153ea-80.on.boat.dev/doctor/</p></div>
+</div>
+<aside>Close on the three differentiators. Open the patient app, run scenario S7 to show the red flag, then the clinic app’s D05 negative test to show a refusal.</aside>
+</section>
+
+</body></html>
