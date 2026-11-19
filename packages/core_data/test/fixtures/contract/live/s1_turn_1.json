@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/c677ef2963da47789f0de5ecea77ebbf/messages",
+  "status": 200,
+  "body": {
+    "reply": "Thanks for sharing that! When did you have your last Pap smear or HPV test, if you remember? You can say the year, or \"never\" or \"not sure.\"",
+    "status": "in_progress",
+    "progress": 0.2,
+    "done": false,
+    "urgent": null
+  }
+}

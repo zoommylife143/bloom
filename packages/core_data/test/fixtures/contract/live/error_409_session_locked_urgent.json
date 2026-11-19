@@ -1,0 +1,26 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/885ef48b6f5d46a2a9ba24cc1cb89b7d/messages",
+  "status": 409,
+  "body": {
+    "error": "session_locked",
+    "detail": "Session status is urgent",
+    "status": "urgent",
+    "urgent": {
+      "rule_id": "R2",
+      "title": "Please get care now",
+      "body": "Thank you for telling me. Bleeding this heavy, or bleeding with feeling dizzy or faint, needs to be checked by a doctor right away. If you feel faint, sit or lie down. Please call 911 or go to the nearest emergency room now. If you can, ask someone to stay with you. We will stop the questions here so you can get help.",
+      "actions": [
+        {
+          "label": "Call 911",
+          "tel": "tel:911"
+        },
+        {
+          "label": "Call or text 988",
+          "tel": "tel:988"
+        }
+      ],
+      "support": null
+    }
+  }
+}

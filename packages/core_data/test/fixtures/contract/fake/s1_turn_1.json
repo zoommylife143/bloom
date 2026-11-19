@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/2438eccbd0834d9dadd3fef077b267aa/messages",
+  "status": 200,
+  "body": {
+    "reply": "Thank you. Which age group are you in: 18-24, 25-29, 30-39, 40-49, 50-64 or 65+?",
+    "status": "in_progress",
+    "progress": 0.1,
+    "done": false,
+    "urgent": null
+  }
+}

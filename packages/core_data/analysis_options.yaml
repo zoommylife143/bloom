@@ -1,14 +1,16 @@
-include: package:flutter_lints/flutter.yaml
+# VGV lints (very_good_analysis), as in every Bloom package and app.
+include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
   exclude:
     - build/**
-    - android/**
-    - ios/**
     - web/**
-    - windows/**
-    - macos/**
-    - linux/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+linter:
+  rules:
+    # Relaxed to keep the hackathon build moving (brief 04 allows this):
+    # - public_member_api_docs: VGV app templates disable it too; the shared
+    #   packages document their public types at class level instead of every member.
+    public_member_api_docs: false

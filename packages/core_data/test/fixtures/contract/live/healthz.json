@@ -1,0 +1,11 @@
+{
+  "method": "GET",
+  "path": "/api/healthz",
+  "status": 200,
+  "body": {
+    "ok": true,
+    "mode": "dev",
+    "trustedrouter_configured": true,
+    "fake_model": false
+  }
+}

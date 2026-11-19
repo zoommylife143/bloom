@@ -396,7 +396,7 @@ def test_login_issues_working_tokens():
 def test_healthz_reports_no_key_values():
     h = Harness(Gateway())
     body = h.client.get("/api/healthz").json()
-    assert body == {"ok": True, "mode": "dev", "trustedrouter_configured": True}
+    assert body == {"ok": True, "mode": "dev", "trustedrouter_configured": True, "fake_model": False}
     assert "test-key" not in json.dumps(body)
 
 
@@ -449,7 +449,9 @@ def test_diagnosis_reply_is_filtered():
     sid = h.new_session()
     reply = h.say(sid, "My periods are heavy.").json()["reply"]
     assert "fibroid" not in reply.lower()
-    assert reply.endswith("What brings you in today?")
+    # The opening question already asked "what brings you in", so the filtered reply asks
+    # the next required field instead of repeating it.
+    assert reply.endswith("65 and over?")
 
 
 def test_bad_schema_retried_once_in_dev():
@@ -463,8 +465,20 @@ def test_bad_schema_retried_once_in_dev():
     h2 = Harness(Gateway(intake_replies=[bad, bad]))
     sid2 = h2.new_session()
     res2 = h2.say(sid2, "I want a checkup.")
-    assert res2.status_code == 502 and res2.json()["error"] == "model_error"
+    # Unusable model output on an intake turn: the next fixed question, not a 502.
+    assert res2.status_code == 200, res2.text
+    assert res2.json()["status"] == "in_progress" and res2.json()["reply"].endswith("?")
     assert h2.gw.count("intake") == 2
+    assert "intake_fallback_question" in h2.dump("audit_log")
+    assert h2.say(sid2, "I'm 30.").status_code == 200  # the session continues
+
+
+def test_unparseable_intake_text_falls_back_to_a_fixed_question():
+    h = Harness(Gateway(intake_replies=["Plain text, no JSON at all.", "Still no JSON here."]))
+    sid = h.new_session()
+    res = h.say(sid, "I want a checkup.")
+    assert res.status_code == 200 and res.json()["status"] == "in_progress"
+    assert "Plain text" not in res.json()["reply"]
 
 
 def test_twelve_turn_cap_forces_brief():
@@ -494,3 +508,83 @@ def test_evidence_title_round_trips():
     sid = store.create_session("dev")
     store.add_evidence(sid, [EvidenceItem(query="q", url="https://www.cdc.gov/x", title="CDC page", passage="p")])
     assert store.get_evidence(sid)[0].title == "CDC page"
+
+
+# ------------------------------------------------- resend safety (contract check 2026-11-19)
+
+
+def test_session_locked_409_carries_status_and_urgent_payload():
+    h = Harness(Gateway(turns=99, fields=_fields("S7")))
+    sid, last, _ = h.run(load("S7")["turns"])
+    assert last.json()["status"] == "urgent"
+    res = h.say(sid, "hello again")
+    assert res.status_code == 409
+    body = res.json()
+    assert body["error"] == "session_locked" and body["status"] == "urgent"
+    assert body["urgent"] == last.json()["urgent"]
+    s1 = load("S1")
+    h2 = Harness(Gateway(turns=len(s1["turns"]), fields=_fields("S1")))
+    sid2, _, _ = h2.run(s1["turns"])
+    body2 = h2.say(sid2, "one more").json()
+    assert body2["status"] == "ready" and body2["urgent"] is None
+    assert h.client.get("/openapi.json").status_code == 200
+
+
+def test_resend_with_same_client_message_id_is_idempotent():
+    h = Harness(Gateway())
+    sid = h.new_session()
+    send = lambda text, mid: h.client.post(  # noqa: E731
+        f"/api/sessions/{sid}/messages", json={"text": text, "client_message_id": mid}, headers=h.patient)
+    first = send("I want a checkup.", "m-1")
+    again = send("I want a checkup.", "m-1")
+    assert first.status_code == again.status_code == 200
+    assert again.json() == first.json()
+    assert h.gw.count("intake") == 1
+    assert sum(1 for m in h.store.get_messages(sid) if m["role"] == "patient") == 1
+    assert send("I'm 30.", "m-2").status_code == 200
+    assert h.gw.count("intake") == 2
+
+
+def test_resend_after_urgent_returns_the_urgent_turn_not_409():
+    h = Harness(Gateway(turns=99, fields=_fields("S7")))
+    sid = h.new_session()
+    body = None
+    for i, text in enumerate(load("S7")["turns"]):
+        body = h.client.post(f"/api/sessions/{sid}/messages", json={"text": text, "client_message_id": f"t{i}"},
+                             headers=h.patient).json()
+    assert body["status"] == "urgent"
+    again = h.client.post(f"/api/sessions/{sid}/messages",
+                          json={"text": load("S7")["turns"][-1], "client_message_id": f"t{i}"}, headers=h.patient)
+    assert again.status_code == 200 and again.json() == body
+
+
+def test_turn_budget_used_up_fails_fast_without_a_call():
+    h = Harness(Gateway(), turn_budget_s=0.0)
+    sid = h.new_session()
+    res = h.say(sid, "I want a checkup.")
+    assert res.status_code == 502 and res.json()["error"] == "model_error"
+    assert h.gw.count() == 0
+    assert "turn_deadline_exceeded" in h.dump("trust_events")
+
+
+def test_unusable_model_output_on_every_turn_still_finishes_the_intake():
+    # Every intake answer is prose; the deterministic fallback asks the three required
+    # questions, fills those fields from the answers, and the brief is drafted.
+    h = Harness(Gateway(intake_replies=["prose"] * 6))
+    sid = h.new_session()
+    replies = [h.say(sid, t).json() for t in ("I'd like a checkup.", "I'm 34.", "No, I don't think so.")]
+    assert [r["status"] for r in replies] == ["in_progress", "in_progress", "ready"]
+    assert "age group" in replies[0]["reply"] and "pregnant" in replies[1]["reply"]
+    rec, completed = h.store.get_intake(sid)
+    assert rec.age_band.value == "30-39" and rec.pregnancy_possible == "no" and completed
+    assert h.gw.count("brief") == 1
+
+
+def test_rule_extract_only_fills_missing_required_fields():
+    from app.graph import rule_extract
+    assert rule_extract(IntakeRecord(), "What brings you in today?", "A checkup.") == {"reason_for_visit": "A checkup."}
+    assert rule_extract(IntakeRecord(), "Which age group are you in?", "I'm 52.") == {"age_band": "50-64"}
+    assert rule_extract(IntakeRecord(), "How old are you?", "I am 70") == {"age_band": "65+"}
+    assert rule_extract(IntakeRecord(), "Could you be pregnant?", "Not sure") == {"pregnancy_possible": "unsure"}
+    assert rule_extract(IntakeRecord(pregnancy_possible="no"), "Could you be pregnant?", "yes") == {}
+    assert rule_extract(IntakeRecord(), "What stage is it at?", "34") == {}

@@ -20,12 +20,13 @@ Source: `server/app/main.py` (Pydantic response models; live OpenAPI at `/docs` 
 | 401 | `unauthorized` | No token, bad signature or expired |
 | 403 | `forbidden` | Patient token on a doctor endpoint |
 | 404 | `session_not_found`, `brief_not_found`, `flag_not_found`, `scenario_not_found` | Unknown id, or brief not generated yet |
-| 409 | `session_locked` | Message to a session that is `urgent`, `ready`, `approved`, `edited` or `rejected` |
+| 409 | `session_locked` | Message to a session that is `urgent`, `ready`, `approved`, `edited` or `rejected`. Body also has `status` and `urgent` (see messages) |
 | 409 | `already_decided` | Second decision on a brief |
-| 422 | `edited_brief_required` | `decision: "edit"` without `edited` (FastAPI's own 422 body is used for schema errors) |
+| 422 | `edited_brief_required` | `decision: "edit"` without `edited`. Schema errors (bad role, empty text) use FastAPI's own body `{"detail": [{"type", "loc", "msg", ...}]}` with no `error` key |
 | 502 | `confidential_route_unavailable` | Privacy floor refused (P02 "route refused" state). Status unchanged, nothing sent to any other model. |
 | 502 | `model_error` | Any other model failure (P02 "model error" state). Status unchanged; the patient can resend. |
 
+- The server never sends 429 itself. A gateway 429/503/529 is retried once in dev mode and otherwise surfaces as 502 `model_error`.
 - `SessionStatus`: `in_progress | urgent | ready | approved | edited | rejected`.
 - `RedFlagRule`: `R1` ectopic, `R2` heavy bleeding, `R3` pelvic infection, `R4` pregnancy/postpartum warning, `R5` self-harm, `R6` sexual assault disclosure.
 
@@ -34,10 +35,10 @@ Source: `server/app/main.py` (Pydantic response models; live OpenAPI at `/docs` 
 ### GET /api/healthz (no auth)
 
 ```json
-{"ok": true, "mode": "dev", "trustedrouter_configured": true}
+{"ok": true, "mode": "dev", "trustedrouter_configured": true, "fake_model": false}
 ```
 
-`mode` is `dev | private`, decided by the server. No key values are returned.
+`mode` is `dev | private`, decided by the server. No key values are returned. `fake_model` is true only when the dev-only offline fake model is on (`BLOOM_FAKE_MODEL=1`, see "Contract check"); never demo with it.
 
 ### POST /api/login (no auth) — A01
 
@@ -67,7 +68,7 @@ Request (body optional): `{"scenario_id": "S1"}` or `{}`. → 200:
 
 ### POST /api/sessions/{session_id}/messages — P02
 
-Request `{"text": "I'd like a checkup."}` (1–4000 chars). → 200 `MessageResponse`:
+Request `{"text": "I'd like a checkup.", "client_message_id": "c-3f2a..."}`. `text` is 1–4000 chars. `client_message_id` (optional, 1–64 chars) makes a resend safe: when a turn with the same id on the same session already succeeded, the server returns that stored response (HTTP 200, same body) without running the turn again or appending the message twice. A resend that arrives while the first request is still running waits for it. Reuse the id only for a resend of the same turn. → 200 `MessageResponse`:
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -76,11 +77,13 @@ Request `{"text": "I'd like a checkup."}` (1–4000 chars). → 200 `MessageResp
 | `progress` | number 0–1 | 1.0 once `done` |
 | `done` | bool | true when the patient flow ends (urgent or intake finished) |
 | `urgent` | UrgentMessage or null | set only when `status == "urgent"` |
+| `parse_path` | string or null | Optional diagnostics (new 2026-11-19; clients may ignore). How this turn's intake output was obtained: `first_pass` (model JSON), `repair` (model JSON after one repair call), `fallback` (fixed question, no model), `rule` (red flag, no model). Null when no intake ran (brief resume) |
+| `brief_parse_path` | string or null | Optional diagnostics (new). Set only on the turn that drafted the brief: `first_pass`, `repair` or `fallback` (deterministic DRAFT, see GET brief) |
 
 Normal turn:
 
 ```json
-{"reply": "How old are you?", "status": "in_progress", "progress": 0.7, "done": false, "urgent": null}
+{"reply": "How old are you?", "status": "in_progress", "progress": 0.7, "done": false, "urgent": null, "parse_path": "first_pass", "brief_parse_path": null}
 ```
 
 Last turn (brief drafted synchronously in the same request, target < 20 s):
@@ -107,7 +110,27 @@ Red flag (P03). Show `urgent.title`, `urgent.body`, `urgent.support` if present,
 }
 ```
 
-Errors: 401, 404 `session_not_found`, 409 `session_locked`, 502 `confidential_route_unavailable` / `model_error`. After a 502 the turn was not saved; the client may resend the same text. If the intake had finished but the brief failed, the next message (any text) resumes at the brief step.
+Errors: 401, 404 `session_not_found`, 409 `session_locked`, 422 (schema), 502 `confidential_route_unavailable` / `model_error`. After a 502 the turn was not saved; the client may resend the same text. If the intake had finished but the brief failed, the next message (any text) resumes at the brief step.
+
+409 `session_locked` tells the client where the session ended, so a client whose earlier request timed out can still show the right screen (P03 for `urgent`, P04 otherwise):
+
+```json
+{"error": "session_locked", "detail": "Session status is urgent", "status": "urgent",
+ "urgent": {"rule_id": "R2", "title": "Please get care now", "body": "...", "actions": [{"label": "Call 911", "tel": "tel:911"}], "support": null}}
+```
+
+`urgent` is null unless `status` is `urgent`.
+
+Timing: one message makes at most a few model calls (intake, then on the last turn retrieval and the brief). All model calls of one turn share a wall-clock budget (`TURN_BUDGET_S`, default 110 s; one call at most `TR_TIMEOUT_S`, default 60 s). Guideline retrieval adds up to 10 s per query. Worst case for one request is about 150 s, under the nginx `/api/` read timeout (180 s). The Dart client waits 160 s for messages, session creation, the negative test and scenario runs, 30 s for everything else. `POST /demo/scenarios/{id}/run` replays several turns and can exceed the proxy timeout with a slow model.
+
+Unusable model output (changed 2026-11-19). The server asks for a JSON object (`response_format: json_object` in dev mode when `TR_JSON_MODE` is on, default; a 400 to it is retried once without it and then no longer sent by that process), shows earlier Bloom turns to the model as the JSON object of that turn, sends `temperature` 0.2 by default (`TR_TEMPERATURE`), and in dev mode makes one *repair* call (the bad output plus "JSON only") if at least 15 s of the turn budget are left. If the intake output is still unusable, the turn still returns 200 with `parse_path: "fallback"`:
+
+- The three required fields (reason for visit, age group, pregnancy possible) are read from the patient's answers with fixed rules.
+- The reply is the fixed question for the NEXT required field that is still missing and was never asked. A question is never repeated.
+- The intake ends (`status: "ready"`, brief drafted in the same request) as soon as the three fields are known, or when every missing one was asked once, or after 4 fallback turns; the 12-turn cap still applies. So an intake always finishes, even if every model answer is unusable.
+- The audit log gets `intake_fallback_question`; the trust panel gets an `intake_fallback` event.
+
+If the brief output is unusable after the repair call, or the turn budget ran out / the brief call timed out, the server stores a deterministic DRAFT built from the intake answers (`brief_parse_path: "fallback"`, see GET brief). Refusals and other HTTP errors never fall back: they still give 502 (`confidential_route_unavailable` / `model_error`), and an intake HTTP error or timeout still gives 502. The fallbacks call no model, so private mode stays fail-closed; they apply in both modes and can be switched off with `BLOOM_DETERMINISTIC_FALLBACK=0`.
 
 ### GET /api/sessions — D01 (doctor)
 
@@ -160,6 +183,7 @@ Red-flag sessions first, then newest first. → 200:
   "provenance": {
     "generated_by": "fortanix/glm-5.3-flash (dev)",
     "evidence_urls": ["https://www.acog.org/guidance/8e2575ff"],
+    "source": "model",
     "created_at": "2026-11-19T08:19:15.828151Z",
     "review_status": "draft",
     "reviewed_by": null,
@@ -175,7 +199,8 @@ Red-flag sessions first, then newest first. → 200:
 
 - `brief` is what to display: the edited version after an edit, else the draft.
 - Every `screenings_possibly_due[].source_url` is one of `evidence[].url` or null. Null means show "No guideline retrieved" (D02 "no guideline" state). With no evidence at all there is one line `{"text": "No guideline retrieved", "source_url": null}`.
-- `evidence[].title` is not stored and comes back null.
+- `evidence[].title` is the page title from Context.dev and may be null.
+- `provenance.source` (new 2026-11-19, default `"model"`): `"fallback"` means the model's brief output was unusable and the server built the draft deterministically from the intake answers, with no AI. Then `generated_by` is `"deterministic-fallback (<mode>)"`, `subjective`, `assessment_considerations` and `plan_considerations` start with `DRAFT (automatic fallback, written without AI: the model's answer was unusable).`, no assessment or plan is drafted, `flags` lists fields not recorded, and `screenings_possibly_due` lists only the retrieved passages (`"Retrieved guideline passage for physician review: <title>"`, `source_url` = an `evidence[].url`) or the single "No guideline retrieved" line. It is still a draft: Confirm / Edit / Reject work as usual. D02 should show a visible "fallback draft (no AI)" label when `source == "fallback"`.
 - `guideline_updates` (optional, new; default `[]`): the `evidence[].url` values whose page a Context.dev Monitor reported as changed in the last 7 days. Non-empty means show the "guideline updated" banner on D02. Clients that ignore the field keep working. Also present on the decision response.
 
 Errors: 401, 403, 404 `brief_not_found` (also while the intake is still running).
@@ -221,8 +246,8 @@ Errors: 401, 403, 404 `brief_not_found`, 409 `already_decided`, 422 `edited_brie
 }
 ```
 
-- `events[].node`: `intake | brief | retrieve | negative_test`. `outcome`: `ok | refused | error`. `policy_required`: `zdr` (dev), `confidential` (private), `deidentified_query` (retrieve, route `context.dev`).
-- `evidence` may contain `receipt` (decoded TrustedRouter receipt claims; `signature_verified: false`), `headers`, `http_status`, `error_code`, `error`.
+- `events[].node`: `intake | brief | retrieve | negative_test | intake_fallback | brief_fallback`. The two `*_fallback` nodes (new) are not model calls: `model_id` null, `policy_required` `no_model_call`, `outcome` `ok`, `evidence.parse_path` `fallback`, `evidence.after_error` the format error that caused it. `outcome`: `ok | refused | error`. `policy_required`: `zdr` (dev), `confidential` (private), `deidentified_query` (retrieve, route `context.dev`).
+- `evidence` may contain `receipt` (decoded TrustedRouter receipt claims; `signature_verified: false`), `headers`, `http_status`, `error_code`, `error`, `finish_reason`, `content_chars` (length of an unparseable answer, never its text). `error` values include `json_parse_failed`, `schema_validation_failed` and `turn_deadline_exceeded` (no call made: the turn budget was used up). New: ok model events carry `parse_path` (`first_pass` or `repair`) and `json_mode` (`json_object`, `off`, or `dropped_after_400`); a 400 to json_object mode is an `error` event with `json_mode: "rejected"`; a failed format event carries `attempt` (1 or 2) and may carry `repair_skipped: "turn_budget_low"`.
 - `attestation` comes from `app/attestation.py`. `verified_claims` only means issuer and audience match; the JWT signature is not verified. Say so in the panel.
 
 Errors: 401, 403, 404 `session_not_found`.
@@ -253,7 +278,7 @@ Errors: 401, 403, 404 `session_not_found`.
 {"rows": [{"id": 14, "actor": "doctor", "action": "brief_approved", "session_id": "a2fc...", "created_at": "2026-11-19T08:19:15.838482Z"}]}
 ```
 
-`actor`: `patient | doctor | system`. `action`: `login`, `session_created`, `message_received`, `reply_filtered`, `red_flag_locked`, `intake_completed`, `brief_generated`, `brief_viewed`, `brief_approved`, `brief_edited`, `brief_rejected`, `route_refused`, `model_error`, `negative_test`, `scenario_run`.
+`actor`: `patient | doctor | system | context.dev`. `action`: `login`, `session_created`, `message_received`, `reply_filtered`, `intake_fallback_question`, `red_flag_locked`, `intake_completed`, `brief_generated`, `brief_viewed`, `brief_approved`, `brief_edited`, `brief_rejected`, `route_refused`, `model_error`, `negative_test`, `scenario_run`, `guideline_monitor_webhook`.
 
 ### POST /api/demo/negative-test — D05 (doctor)
 
@@ -276,7 +301,7 @@ Request (optional) `{"session_id": "<id>"}` to attach the event to that session'
 }
 ```
 
-`outcome: "error"` with `evidence.error: "expected_refusal_but_served"` means the gateway served it when it should not have; show that loudly. Errors: 401, 403, 404 `session_not_found`.
+Any HTTP 400 from the gateway on this call is `outcome: "refused"`, whatever its code. Live result on 2026-11-19 with `TR_NEGATIVE_TEST_PROVIDER=fortanix`: HTTP 400 `{"error_code": "invalid_request", "error_message": "No route candidates match the requested provider filters"}` in about 150 ms, so `refused`. A provider 5xx would be `outcome: "error"` with `evidence.http_status`. `outcome: "error"` with `evidence.error: "expected_refusal_but_served"` means the gateway served it when it should not have; show that loudly. Errors: 401, 403, 404 `session_not_found`.
 
 ### POST /api/demo/scenarios/{scenario_id}/run — D05 (doctor)
 
@@ -322,3 +347,39 @@ Receiver for Context.dev Monitor webhooks (`change.detected`, `run.completed`). 
 | 503 | `webhook_not_configured` | No secret configured (fails closed; nothing parsed or stored) |
 
 Monitors are created with `server/scripts/create_guideline_monitor.py` (one `page` monitor per guideline URL in `scenarios/evidence-cache`).
+
+## Contract check
+
+`server/scripts/contract_capture.py` drives a running server over real HTTP and saves every response as a fixture under `packages/core_data/test/fixtures/contract/`. `packages/core_data/test/contract_fixtures_test.dart` replays each fixture through the real `BloomApiClient` (it also checks the method and the exact `/api/...` URL the client builds) and decodes it with the real `fromJson` code. Tokens, receipts and header values are redacted; the script refuses to write a fixture that contains a configured key.
+
+```bash
+cd server
+# 1. Offline, no keys. BLOOM_FAKE_MODEL=1 is a dev-only scripted model (app/fake_gateway.py):
+#    off by default, refused at startup in private mode, reported by /api/healthz.
+BLOOM_FAKE_MODEL=1 DATABASE_URL=sqlite:////tmp/contract.db uv run uvicorn app.main:app --port 8765 &
+uv run python scripts/contract_capture.py --out ../packages/core_data/test/fixtures/contract/fake
+# 2. Private mode with no confidential model: the 502 refusal (no outbound model call).
+BLOOM_MODE=private DATABASE_URL=sqlite:////tmp/contract-private.db uv run uvicorn app.main:app --port 8766 &
+uv run python scripts/contract_capture.py --base http://127.0.0.1:8766 --private-only \
+  --out ../packages/core_data/test/fixtures/contract/private
+# 3. Live (real model calls, about 12-20): S1, S7 and the negative test.
+uv run --env-file ../.env uvicorn app.main:app --port 8765 &
+uv run --env-file ../.env python scripts/contract_capture.py --live \
+  --out ../packages/core_data/test/fixtures/contract/live
+# Then run the core_data tests (very_good test in packages/core_data).
+```
+
+### Bad-model check (`server/scripts/live_check.py`)
+
+Drives S1, S3 (must end `ready` with a brief) and S7 (must end `urgent`, R2) over HTTP and prints, per turn, the HTTP status, `parse_path` and status, then the brief's `source`, `generated_by` and citation count, and a trust-event summary. After a scenario's scripted turns it answers "No, nothing else." until done (at most 12 turns). Exit code 0 only if all pass.
+
+```bash
+cd server
+# Offline rehearsal: the fake model answers garbage (prose / truncated JSON / wrong shape) at a
+# given rate (BLOOM_FAKE_GARBAGE_RATE, 0..1) and can reject json_object mode with a 400.
+BLOOM_FAKE_MODEL=1 BLOOM_FAKE_GARBAGE_RATE=1.0 BLOOM_FAKE_REJECT_JSON_MODE=1 \
+  DATABASE_URL=sqlite:////tmp/live-check.db uv run uvicorn app.main:app --port 8765 &
+uv run python scripts/live_check.py --base http://127.0.0.1:8765
+# Live (real model calls, roughly 10-30): against a server the lead started.
+uv run python scripts/live_check.py --base "$BASE_URL"
+```

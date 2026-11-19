@@ -1,0 +1,18 @@
+{
+  "method": "GET",
+  "path": "/api/sessions/bf9b96f752674cf8b0304aee5da48334/flag",
+  "status": 200,
+  "body": {
+    "session_id": "bf9b96f752674cf8b0304aee5da48334",
+    "rule_id": "R2",
+    "matched": [
+      "soaking through a pad",
+      "soaking through",
+      "pad or tampon in an hour or less"
+    ],
+    "source": "text",
+    "created_at": "2026-11-19T09:24:50.316383Z",
+    "title": "Please get care now",
+    "body": "Thank you for telling me. Bleeding this heavy, or bleeding with feeling dizzy or faint, needs to be checked by a doctor right away. If you feel faint, sit or lie down. Please call 911 or go to the nearest emergency room now. If you can, ask someone to stay with you. We will stop the questions here so you can get help."
+  }
+}

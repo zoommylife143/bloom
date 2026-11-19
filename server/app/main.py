@@ -65,6 +65,19 @@ def build_services(
     attestation_fn: Callable[[], dict] | None = None,
 ) -> Services:
     settings = settings or get_settings()
+    if settings.bloom_fake_model and router is None:
+        if settings.bloom_mode == "private":
+            # Private mode fails closed: a fake model must never stand in for the confidential route.
+            raise RuntimeError("BLOOM_FAKE_MODEL is dev-only and is refused in private mode")
+        from app import fake_gateway
+
+        settings = settings.model_copy(update={"tr_model_id": fake_gateway.FAKE_MODEL_ID})
+        store = store or Store(settings.sqlite_path)
+        gateway = fake_gateway.FakeGateway(
+            garbage_rate=settings.bloom_fake_garbage_rate, reject_json_mode=settings.bloom_fake_reject_json_mode
+        )
+        router = ModelRouter(settings, client=fake_gateway.fake_client(gateway), on_event=store.record_trust_event)
+        attestation_fn = attestation_fn or fake_gateway.fake_attestation
     store = store or Store(settings.sqlite_path)
     router = router or ModelRouter(settings, on_event=store.record_trust_event)
     retriever = retriever or GuidelineRetriever(settings)
@@ -89,10 +102,20 @@ class ErrorResponse(BaseModel):
     detail: str | None = None
 
 
+class SessionLockedResponse(ErrorResponse):
+    """409 session_locked: the session's status, plus the urgent message when it is
+    urgent, so a client whose earlier request timed out can still show P03."""
+
+    status: SessionStatus
+    urgent: "UrgentMessageOut | None" = None
+
+
 class HealthResponse(BaseModel):
     ok: bool
     mode: Literal["dev", "private"]
     trustedrouter_configured: bool
+    # True only when the dev-only offline fake model is on (BLOOM_FAKE_MODEL=1).
+    fake_model: bool = False
 
 
 class LoginRequest(BaseModel):
@@ -119,6 +142,9 @@ class CreateSessionResponse(BaseModel):
 
 class MessageRequest(BaseModel):
     text: str = Field(min_length=1, max_length=4000)
+    # Optional, for safe resends: the same id on the same session returns the stored
+    # response of the first successful request instead of running the turn again.
+    client_message_id: str | None = Field(default=None, min_length=1, max_length=64)
 
 
 class UrgentActionOut(BaseModel):
@@ -140,6 +166,12 @@ class MessageResponse(BaseModel):
     progress: float = Field(ge=0, le=1)
     done: bool  # true when the patient flow ends (urgent or intake finished)
     urgent: UrgentMessageOut | None = None
+    # Diagnostics (added 2026-11-19, optional; clients may ignore): how this turn's model
+    # output was obtained. parse_path: "first_pass" | "repair" | "fallback" (fixed question,
+    # no model) | "rule" (urgent, no model) | null. brief_parse_path: set on the turn that
+    # drafted the brief: "first_pass" | "repair" | "fallback" (deterministic DRAFT).
+    parse_path: str | None = None
+    brief_parse_path: str | None = None
 
 
 class SessionSummary(BaseModel):
@@ -239,15 +271,16 @@ class ScenarioRunResponse(BaseModel):
 
 
 class ApiError(Exception):
-    def __init__(self, status: int, error: str, detail: str | None = None):
+    def __init__(self, status: int, error: str, detail: str | None = None, extra: dict | None = None):
         self.status, self.error, self.detail = status, error, detail
+        self.extra = extra or {}
 
 
 ERR = {
     401: {"model": ErrorResponse, "description": "Missing or invalid demo token"},
     403: {"model": ErrorResponse, "description": "Wrong role"},
     404: {"model": ErrorResponse, "description": "Not found"},
-    409: {"model": ErrorResponse, "description": "Conflict"},
+    409: {"model": SessionLockedResponse, "description": "Conflict (session_locked carries status and urgent)"},
     502: {"model": ErrorResponse, "description": "confidential_route_unavailable or model_error"},
 }
 
@@ -317,7 +350,7 @@ def create_app(services: Services | None = None) -> FastAPI:
 
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, exc: ApiError) -> JSONResponse:
-        return JSONResponse(status_code=exc.status, content={"error": exc.error, "detail": exc.detail})
+        return JSONResponse(status_code=exc.status, content={"error": exc.error, "detail": exc.detail, **exc.extra})
 
     def role_of(authorization: str | None = Header(default=None)) -> str:
         if not authorization or not authorization.lower().startswith("bearer "):
@@ -341,7 +374,8 @@ def create_app(services: Services | None = None) -> FastAPI:
     def healthz() -> HealthResponse:
         settings = get_settings() if holder["s"] is None else holder["s"].settings
         return HealthResponse(
-            ok=True, mode=settings.bloom_mode, trustedrouter_configured=bool(settings.trustedrouter_api_key)
+            ok=True, mode=settings.bloom_mode, trustedrouter_configured=bool(settings.trustedrouter_api_key),
+            fake_model=settings.bloom_fake_model,
         )
 
     @api.post("/login", response_model=LoginResponse)
@@ -365,20 +399,29 @@ def create_app(services: Services | None = None) -> FastAPI:
             reply=OPENING_QUESTION, progress=0.0,
         )
 
-    def _turn(s: Services, session_id: str, text: str):
+    def _locked(s: Services, session_id: str, status: str) -> ApiError:
+        urgent = None
+        if status == SessionStatus.URGENT.value:
+            flag = s.store.get_red_flag(session_id)
+            urgent = urgent_payload(flag["rule_id"]) if flag else None
+        return ApiError(409, "session_locked", f"Session status is {status}",
+                        extra={"status": status, "urgent": urgent})
+
+    def _turn(s: Services, session_id: str, text: str, client_message_id: str | None = None):
         try:
-            return s.graph.run_turn(session_id, text)
+            return s.graph.run_turn(session_id, text, client_message_id)
         except SessionNotFound:
             raise ApiError(404, "session_not_found") from None
         except SessionLocked as exc:
-            raise ApiError(409, "session_locked", f"Session status is {exc}") from None
+            raise _locked(s, session_id, str(exc)) from None
         except (ConfidentialRouteUnavailable, ModelCallError) as exc:
             raise _model_error(s, exc, session_id) from None
 
     @api.post("/sessions/{session_id}/messages", response_model=MessageResponse, responses=ERR)
     def post_message(session_id: str, body: MessageRequest, role: str = Depends(any_role)) -> MessageResponse:
-        r = _turn(svc(), session_id, body.text)
-        return MessageResponse(reply=r.reply, status=r.status, progress=r.progress, done=r.done, urgent=r.urgent)
+        r = _turn(svc(), session_id, body.text, body.client_message_id)
+        return MessageResponse(reply=r.reply, status=r.status, progress=r.progress, done=r.done, urgent=r.urgent,
+                               parse_path=r.parse_path, brief_parse_path=r.brief_parse_path)
 
     # ------------------------------------------------------------- clinic
 

@@ -1,0 +1,62 @@
+{
+  "query": "dysmenorrhea management lower abdominal moderate age 25-29",
+  "fixture": false,
+  "request_id": "5b1fcbad-e90e-4e4f-8d13-07786ea652fc",
+  "cached_at": "2026-11-19T09:42:03.123709+00:00",
+  "results": [
+    {
+      "url": "https://stacks.cdc.gov/view/cdc/6688/cdc_6688_DS1.pdf",
+      "title": "An Epidemiologic Approach to Reproductive Health",
+      "passage": "by JE Higgins \u00b7 1994 \u2014 Outcome: Dysmenorrhea is classified as none, mild, moderate, or severe as subjectively reported by the study subject in response to a standard set of ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://www.cdc.gov/nchs/data/statab/gmwk1_94.pdf",
+      "title": "ICD Title & Code Cross Reference File",
+      "passage": "... lower genitourinary tract (098.0). Acute, of upper genitourinary tract (098.1) ... Abdominal part (150.2). Upper third (150.3). Middle third (150.4). Lower ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://stacks.cdc.gov/view/cdc/8256/cdc_8256_DS1.pdf",
+      "title": "REPRODUCTIVE HEALTH SURVEY MOLDOVA, 1997",
+      "passage": "by F Serbanescu \u00b7 1998 \u00b7 Cited by 1 \u2014 ... management. Many thanks to Mary Ann Micka and Willa Pressman, USAID/Washington, for their continued support of the survey. Special thanks are extended to ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://www.cdc.gov/mmwr/pdf/rr/rr6304.pdf",
+      "title": "Providing Quality Family Planning Services",
+      "passage": "significant positive impact of low-intensity (27) or moderate- intensity (24,25,29) counseling interventions on at least one outcome of ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://stacks.cdc.gov/view/cdc/12090/cdc_12090_DS1.pdf",
+      "title": "Family Planning Methods and Practice: AFRICA",
+      "passage": "... management, as well as clinic management, is an important part of this new edition. I hope readers will find this version of what has been called \u201cthe.",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://www.acog.org/clinical/withdrawn-document/",
+      "title": "Withdrawn Document | ACOG - College",
+      "passage": "To ensure that clinical content is up to date and relevant, ACOG clinical documents are routinely reviewed every 24-36 months to determine if the content is ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://www.cdc.gov/lead-prevention/media/pdfs/2025/03/cdc_147837_DS1.pdf",
+      "title": "Guidelines for the Identification and Management of Lead Exposure in ...",
+      "passage": "CDC uses a blood lead reference value of 3.5 micrograms per deciliter (\u00b5g/dL) to identify children with higher levels of lead in their blood compared to ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://www.atsdr.cdc.gov/toxprofiles/tp35-c2.pdf",
+      "title": "Toxicological Profile for DDT, DDE, and DDD",
+      "passage": "The primary purpose of this chapter is to provide public health officials, physicians, toxicologists, and other interested individuals and groups with an ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    },
+    {
+      "url": "https://www.atsdr.cdc.gov/toxprofiles/tp35.pdf",
+      "title": "Toxicological Profile for DDT, DDE, and DDD",
+      "passage": "The ATSDR toxicological profile succinctly characterizes the toxicologic and adverse health effects information for these toxic substances described therein ...",
+      "retrieved_at": "2026-11-19T09:42:03.123709+00:00"
+    }
+  ]
+}

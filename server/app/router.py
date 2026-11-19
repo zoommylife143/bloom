@@ -13,11 +13,21 @@ Both send ``allow_fallbacks=False``. Private mode fails closed: a refusal raises
 Each call records one ``TrustEvent`` (metadata only, never prompt or output text) and
 hands it to ``on_event``.
 
-json_mode choice: TrustedRouter filters routes on ``response_format`` by default
-(provider-routing docs), so sending it could remove the only route and cause a 400
-that looks like a privacy refusal. We therefore never send ``response_format``. The
-caller's prompt asks for JSON, and this module extracts and validates the JSON object
-from the text. A parse failure gets at most one retry, in dev mode only.
+json_mode (changed 2026-11-19 after 60-80 % of live intake answers came back as prose):
+
+* Dev mode sends ``response_format={"type": "json_object"}`` when ``TR_JSON_MODE`` is on
+  (default). TrustedRouter filters routes on ``response_format``, so the gateway may
+  answer 400. A 400 that is not the documented privacy refusal is then retried once
+  without it; when that retry is served, the router stops sending it for the rest of
+  the process. Private mode never sends it (a 400 there must stay an unambiguous,
+  fail-closed refusal).
+* The text is still parsed defensively (``json_candidates``: bare, fenced or embedded,
+  last valid object wins) and checked with the caller's ``validate``.
+* A parse / schema failure gets at most one *repair* call, in dev mode only, and only if
+  the turn budget has at least ``REPAIR_MIN_BUDGET_S`` left: the same model gets its bad
+  output back plus "reply with the JSON object only". Same model, same privacy floor.
+* Every ok event carries ``evidence.parse_path`` = ``first_pass`` or ``repair`` and
+  ``evidence.json_mode`` = ``json_object`` / ``off`` / ``dropped_after_400``.
 
 Evidence (https://trustedrouter.com/docs/receipts, checked 2026-11-19): we send the
 ``x-inference-receipt: true`` request header, so TrustedRouter returns a signed receipt
@@ -35,10 +45,12 @@ failure: ``confidential_privacy_required`` (full body not documented).
 from __future__ import annotations
 
 import base64
+import contextlib
 import json
 import re
+import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from typing import Any
 
 import openai
@@ -76,6 +88,24 @@ _RECEIPT_ID_CLAIMS = ("rv", "jti", "gen", "iat", "exp", "iss", "req", "resp", "a
 _TIMEOUT_S = 60.0
 
 
+JSON_OBJECT = {"type": "json_object"}
+REPAIR_INSTRUCTION = (
+    "Your last answer was not one valid JSON object with the required keys. Reply again with "
+    "ONE JSON object only: no prose, no markdown fences, no text before or after it."
+)
+_REPAIR_MAX_CHARS = 4000
+# A repair call is skipped when less than this is left of the turn budget, so the
+# deterministic fallback (and on a final turn, the brief) still has time.
+REPAIR_MIN_BUDGET_S = 15.0
+# Words in a 400 body that suggest the gateway rejected response_format itself (or found
+# no route that supports it), as opposed to e.g. a context-length error.
+_JSON_MODE_MARKERS = ("response_format", "json")
+
+
+# Temporary provider overloads that dev mode retries once (same model, after a pause).
+OVERLOAD_STATUSES = frozenset({429, 503, 529})
+
+
 class ConfidentialRouteUnavailable(Exception):
     """No route met the privacy floor (or private mode has no model). Fail closed."""
 
@@ -90,6 +120,10 @@ class ModelCallError(Exception):
     def __init__(self, event: TrustEvent, message: str = "model call failed"):
         super().__init__(message)
         self.event = event
+
+
+class JsonModeRejected(ModelCallError):
+    """Internal: a 400 to a request that carried ``response_format``. Retried without it."""
 
 
 class ModelRouter:
@@ -109,6 +143,28 @@ class ModelRouter:
         # model call, so it is switched off: every call here is exactly one request.
         self._client = base.with_options(max_retries=0)
         self._on_event = on_event
+        self._overload_backoff_s = 2.0
+        self._timeout_s = settings.tr_timeout_s
+        self._local = threading.local()  # per-request deadline (FastAPI runs sync routes in threads)
+        # Set once a json_object request was rejected (400) and the same request without it
+        # was served. Process-wide: the router is built once per server process.
+        self.json_mode_rejected = False
+
+    @contextlib.contextmanager
+    def deadline(self, seconds: float) -> Iterator[None]:
+        """Bound every model call made inside the block (this thread) to ``seconds`` of wall
+        time in total. A call that would start with less than 1 s left fails fast with a
+        ``turn_deadline_exceeded`` error event instead of being sent."""
+        previous = getattr(self._local, "deadline", None)
+        self._local.deadline = time.monotonic() + seconds
+        try:
+            yield
+        finally:
+            self._local.deadline = previous
+
+    def _remaining(self) -> float | None:
+        deadline = getattr(self._local, "deadline", None)
+        return None if deadline is None else deadline - time.monotonic()
 
     # ------------------------------------------------------------------ public
 
@@ -119,11 +175,18 @@ class ModelRouter:
         node: str,
         session_id: str | None = None,
         json_mode: bool = True,
+        validate: Callable[[str], Any] | None = None,
     ) -> tuple[str, TrustEvent]:
-        """Send one chat completion. Returns (text, ok TrustEvent).
+        """Send one chat completion (plus, in dev mode, at most one repair call).
+        Returns (text, ok TrustEvent).
 
-        With ``json_mode`` the returned text is the extracted JSON object (validated).
-        Raises ``ConfidentialRouteUnavailable`` on a refusal, ``ModelCallError`` otherwise.
+        With ``json_mode`` the returned text is the extracted JSON object; with
+        ``validate`` (raises ``ValueError`` / ``ValidationError`` on a bad shape) it is
+        the last object in the answer that passes it. The ok event's evidence says
+        ``parse_path``: ``first_pass`` or ``repair``. Raises
+        ``ConfidentialRouteUnavailable`` on a refusal, ``ModelCallError`` otherwise; a
+        format failure has ``evidence.error`` ``json_parse_failed`` or
+        ``schema_validation_failed``.
         """
         mode = self.settings.bloom_mode
         if mode == "private":
@@ -140,28 +203,68 @@ class ModelRouter:
             model, floor = self.settings.tr_model_id, "zdr"
 
         provider = {"min_privacy": floor, "allow_fallbacks": False}
-        # Dev mode only: one retry for a JSON parse failure (plan section 13).
-        attempts = 2 if (json_mode and mode == "dev") else 1
-        for attempt in range(1, attempts + 1):
-            text, event = self._call(
-                messages, model=model, provider=provider, node=node,
-                session_id=session_id, mode=mode,
-            )
-            if not json_mode:
-                self._emit(event)
-                return text, event
-            parsed = extract_json(text)
-            if parsed is not None:
-                self._emit(event)
-                return parsed, event
-            bad = event.model_copy(update={
-                "outcome": TrustOutcome.ERROR,
-                "evidence": {**event.evidence, "error": "json_parse_failed", "attempt": attempt},
-            })
+        kw = dict(model=model, provider=provider, node=node, session_id=session_id, mode=mode)
+        if not json_mode:
+            text, event = self._call_dev_overload_retry(messages, **kw)
+            self._emit(event)
+            return text, event
+
+        send_json_mode = mode == "dev" and self.settings.tr_json_mode
+        text, event = self._json_call(messages, send_json_mode, **kw)
+        found, error = _first_valid(text, validate)
+        if found is not None:
+            event = _with_evidence(event, parse_path="first_pass")
+            self._emit(event)
+            return found, event
+        bad = self._format_error(event, error, attempt=1, text=text)
+        remaining = self._remaining()
+        # Dev mode only: one repair call (plan section 13). Private mode: no retry at all.
+        if mode != "dev" or (remaining is not None and remaining < REPAIR_MIN_BUDGET_S):
+            if mode == "dev":
+                bad = _with_evidence(bad, repair_skipped="turn_budget_low")
             self._emit(bad)
-            if attempt == attempts:
-                raise ModelCallError(bad, "model output was not valid JSON")
-        raise AssertionError("unreachable")  # pragma: no cover
+            raise ModelCallError(bad, "model output was not valid JSON")
+        self._emit(bad)
+        repair = [
+            *messages,
+            {"role": "assistant", "content": text[:_REPAIR_MAX_CHARS] if text.strip() else "(empty answer)"},
+            {"role": "user", "content": REPAIR_INSTRUCTION},
+        ]
+        text2, event2 = self._json_call(repair, send_json_mode, **kw)
+        found, error = _first_valid(text2, validate)
+        if found is not None:
+            event2 = _with_evidence(event2, parse_path="repair")
+            self._emit(event2)
+            return found, event2
+        bad2 = self._format_error(event2, error, attempt=2, text=text2)
+        self._emit(bad2)
+        raise ModelCallError(bad2, "model output was not valid JSON")
+
+    def _format_error(self, event: TrustEvent, error: str, *, attempt: int, text: str) -> TrustEvent:
+        # Lengths only, never the text: tells "empty" from "prose" in the D03 panel.
+        return event.model_copy(update={
+            "outcome": TrustOutcome.ERROR,
+            "evidence": {**event.evidence, "error": error, "attempt": attempt, "content_chars": len(text)},
+        })
+
+    def _json_call(self, messages: list[dict], send_json_mode: bool, **kw: Any) -> tuple[str, TrustEvent]:
+        """One logical call that asks for a JSON object. Sends ``response_format`` unless it
+        is off or was rejected earlier in this process; a 400 to it is retried once
+        without it (dev mode only; callers pass ``send_json_mode=False`` in private mode)."""
+        if not send_json_mode:
+            text, event = self._call_dev_overload_retry(messages, **kw)
+            return text, _with_evidence(event, json_mode="off")
+        if self.json_mode_rejected:
+            text, event = self._call_dev_overload_retry(messages, **kw)
+            return text, _with_evidence(event, json_mode="dropped_after_400")
+        try:
+            text, event = self._call_dev_overload_retry(messages, response_format=JSON_OBJECT, **kw)
+            return text, _with_evidence(event, json_mode="json_object")
+        except JsonModeRejected:
+            pass  # error event already emitted
+        text, event = self._call_dev_overload_retry(messages, **kw)
+        self.json_mode_rejected = True  # served without it: stop sending it in this process
+        return text, _with_evidence(event, json_mode="dropped_after_400")
 
     def negative_test(self, session_id: str | None = None) -> TrustEvent:
         """D05 demo: ask for a confidential route on a provider that is only ZDR.
@@ -195,6 +298,23 @@ class ModelRouter:
 
     # ----------------------------------------------------------------- private
 
+    def _call_dev_overload_retry(self, messages: list[dict], **kw: Any) -> tuple[str, TrustEvent]:
+        """``_call`` plus, in dev mode only, one retry of the same model after a
+        temporary overload (HTTP 429/503/529). Private mode never retries, and a
+        refusal (ConfidentialRouteUnavailable) is never caught here."""
+        try:
+            return self._call(messages, **kw)
+        except ModelCallError as exc:
+            status = exc.event.evidence.get("http_status")
+            if kw["mode"] != "dev" or status not in OVERLOAD_STATUSES:
+                raise
+            exc_saved = exc
+        remaining = self._remaining()
+        if remaining is not None and remaining < self._overload_backoff_s + 1.0:
+            raise exc_saved
+        time.sleep(self._overload_backoff_s)
+        return self._call(messages, **kw)
+
     def _call(
         self,
         messages: list[dict],
@@ -206,6 +326,7 @@ class ModelRouter:
         mode: str,
         max_tokens: int | None = None,
         any_400_is_refusal: bool = False,
+        response_format: dict | None = None,
     ) -> tuple[str, TrustEvent]:
         """One HTTP request. Returns (text, ok event, not yet emitted). Errors are
         emitted here and raised."""
@@ -216,8 +337,26 @@ class ModelRouter:
             "extra_body": {"provider": provider},
             "extra_headers": {RECEIPT_HEADER: "true"},
         }
+        if self.settings.tr_reasoning_effort:
+            kwargs["extra_body"]["reasoning"] = {"effort": self.settings.tr_reasoning_effort}
         if max_tokens is not None:
             kwargs["max_tokens"] = max_tokens
+        if response_format is not None:
+            kwargs["response_format"] = response_format
+        if self.settings.tr_temperature is not None:
+            kwargs["temperature"] = self.settings.tr_temperature
+        timeout = self._timeout_s
+        remaining = self._remaining()
+        if remaining is not None:
+            if remaining < 1.0:
+                event = self._event(
+                    node=node, session_id=session_id, mode=mode, model_id=model, policy=floor,
+                    outcome=TrustOutcome.ERROR, evidence={"error": "turn_deadline_exceeded"}, latency_ms=0,
+                )
+                self._emit(event)
+                raise ModelCallError(event, "turn time budget used up; no call made")
+            timeout = min(timeout, remaining)
+        kwargs["timeout"] = timeout
 
         start = time.perf_counter()
         try:
@@ -230,6 +369,20 @@ class ModelRouter:
                 **_error_evidence(exc, _message_texts(messages)),
                 **_header_evidence(exc.response.headers),
             }
+            if (
+                response_format is not None and mode == "dev" and not any_400_is_refusal
+                and evidence.get("error_code") != "confidential_privacy_required"
+                and (_is_route_rejection(body_text) or any(m in body_text for m in _JSON_MODE_MARKERS))
+            ):
+                # Likely the json_object request itself (TrustedRouter filters routes on
+                # response_format). The caller retries once without it, same model and floor.
+                event = self._event(
+                    node=node, session_id=session_id, mode=mode, model_id=model, policy=floor,
+                    outcome=TrustOutcome.ERROR, evidence={**evidence, "json_mode": "rejected"},
+                    latency_ms=latency, request_id=_request_id(exc.response.headers),
+                )
+                self._emit(event)
+                raise JsonModeRejected(event, "gateway rejected response_format=json_object") from None
             refusal = any_400_is_refusal or floor == "confidential" or _is_route_rejection(body_text)
             event = self._event(
                 node=node, session_id=session_id, mode=mode, model_id=model, policy=floor,
@@ -267,7 +420,8 @@ class ModelRouter:
         headers = raw.headers
         try:
             completion = raw.parse()
-            text = completion.choices[0].message.content or ""
+            choice = completion.choices[0]
+            text = choice.message.content or ""
         except Exception as exc:  # malformed success body
             event = self._event(
                 node=node, session_id=session_id, mode=mode, model_id=model, policy=floor,
@@ -285,6 +439,8 @@ class ModelRouter:
             evidence["receipt"] = receipt
         if getattr(completion, "id", None):
             evidence["response_id"] = completion.id
+        if getattr(choice, "finish_reason", None):
+            evidence["finish_reason"] = choice.finish_reason
         served_model = getattr(completion, "model", None)
         if served_model:
             evidence["served_model"] = served_model
@@ -318,23 +474,59 @@ class ModelRouter:
 
 # ---------------------------------------------------------------------- helpers
 
-def extract_json(text: str) -> str | None:
-    """Return the JSON object in ``text`` (bare, fenced or embedded), or None."""
-    candidates = [text.strip()]
-    fence = re.search(r"```(?:json)?\s*(.*?)```", text, re.DOTALL | re.IGNORECASE)
-    if fence:
-        candidates.append(fence.group(1).strip())
-    first, last = text.find("{"), text.rfind("}")
-    if 0 <= first < last:
-        candidates.append(text[first : last + 1])
-    for c in candidates:
+def json_candidates(text: str) -> list[str]:
+    """Every top-level JSON object in ``text`` (bare, fenced or embedded), in order."""
+    stripped = text.strip()
+    try:
+        if isinstance(json.loads(stripped), dict):
+            return [stripped]
+    except (ValueError, TypeError):
+        pass
+    decoder = json.JSONDecoder()
+    found: list[str] = []
+    i = text.find("{")
+    while i != -1:
         try:
-            value = json.loads(c)
-        except (ValueError, TypeError):
+            value, end = decoder.raw_decode(text, i)
+        except ValueError:
+            i = text.find("{", i + 1)
             continue
         if isinstance(value, dict):
-            return c
-    return None
+            found.append(text[i:end])
+            i = text.find("{", end)
+        else:  # pragma: no cover - raw_decode at "{" always yields a dict
+            i = text.find("{", i + 1)
+    return found
+
+
+def extract_json(text: str) -> str | None:
+    """Return the JSON object in ``text`` (bare, fenced or embedded), or None.
+
+    When the text holds several objects (prose plus a draft and a final object, seen
+    live), the last complete top-level object wins.
+    """
+    found = json_candidates(text)
+    return found[-1] if found else None
+
+
+def _first_valid(text: str, validate: Callable[[str], Any] | None) -> tuple[str | None, str]:
+    """(object text, "") for the last object that passes ``validate``, else (None, error)."""
+    found = json_candidates(text)
+    if not found:
+        return None, "json_parse_failed"
+    if validate is None:
+        return found[-1], ""
+    for candidate in reversed(found):
+        try:
+            validate(candidate)
+        except ValueError:  # pydantic's ValidationError is a ValueError
+            continue
+        return candidate, ""
+    return None, "schema_validation_failed"
+
+
+def _with_evidence(event: TrustEvent, **extra: Any) -> TrustEvent:
+    return event.model_copy(update={"evidence": {**event.evidence, **extra}})
 
 
 def _ms(start: float) -> int:

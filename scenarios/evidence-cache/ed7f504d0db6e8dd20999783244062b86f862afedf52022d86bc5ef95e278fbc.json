@@ -1,0 +1,62 @@
+{
+  "query": "cervical cancer screening interval age 25-29",
+  "fixture": false,
+  "request_id": "13725a9f-ab18-43d4-b02d-7177eb79a88c",
+  "cached_at": "2026-11-19T09:42:06.381871+00:00",
+  "results": [
+    {
+      "url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening",
+      "title": "Cervical Cancer: Screening | United States Preventive Services Taskforce",
+      "passage": "The USPSTF recommends screening for cervical cancer every 3 years with cervical cytology alone in women aged 21 to 29 years.",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.acog.org/womens-health/infographics/cervical-cancer-screening",
+      "title": "Cervical Cancer Screening",
+      "passage": "If you are 21 to 29\u2014 Have a Pap test alone every 3 years. HPV testing alone can be considered for women who are 25 to 29, but Pap tests are preferred.",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.uspreventiveservicestaskforce.org/uspstf/draft-recommendation/cervical-cancer-screening-adults-adolescents",
+      "title": "Draft Recommendation: Cervical Cancer: Screening",
+      "passage": "The USPSTF recommends screening for cervical cancer every 3 years with cervical cytology alone in women ages 21 to 29 years",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.cdc.gov/cervical-cancer/screening/index.html",
+      "title": "Screening for Cervical Cancer",
+      "passage": "You should start getting Pap tests at age 21. If you are 21 to 29 years old You should start getting Pap tests at age 21. you can wait three years until your ...",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.cdc.gov/std/treatment-guidelines/hpv-cancer.htm",
+      "title": "Human Papillomavirus (HPV) Infection - STI Treatment Guidelines",
+      "passage": "Annual cervical cancer screening is not recommended for persons at average risk. Instead, cytology testing is recommended every 3 years for ...",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.acog.org/clinical/guidance/committee-statement/2026/07/screening-for-cervical-cancer/",
+      "title": "Screening for Cervical Cancer",
+      "passage": "... cervical cancer screening guidelines and addresses cervical cancer screening for patients at average risk in the following age categories: 21\u201329 years, 30 ...",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://stacks.cdc.gov/view/cdc/32439/cdc_32439_DS1.pdf",
+      "title": "HHS Public Access",
+      "passage": "by GS Ogilvie \u00b7 2013 \u00b7 Cited by 77 \u2014 to be screened every 4 years or after . 51.4% when screening start was delayed to age 25. with screening starting after 25 years of age, ...",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.acog.org/news/2026/04/acog-publishes-updated-cervical-cancer-screening-guidance/",
+      "title": "ACOG Publishes Updated Cervical Cancer Screening Guidance",
+      "passage": "Recommendations for patients aged 21\u201329 years and for those over age 65 remain the same as in prior guidance.",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    },
+    {
+      "url": "https://www.uspreventiveservicestaskforce.org/home/getfilebytoken/dvDjnZzW9PDxzKBauB4QxA",
+      "title": "Screening for Cervical Cancer With High-Risk Human Papillomavirus ...",
+      "passage": "The IPD meta-analysis of data from 4 cotesting trials and 1 primary. hrHPV screening trial found lower risk of invasive cervical cancer with any hrHPV screening.",
+      "retrieved_at": "2026-11-19T09:42:06.381871+00:00"
+    }
+  ]
+}

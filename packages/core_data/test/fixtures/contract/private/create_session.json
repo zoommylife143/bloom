@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/sessions",
+  "status": 200,
+  "body": {
+    "session_id": "ee80cbea36d14157a62052b93510a2f2",
+    "mode": "private",
+    "status": "in_progress",
+    "reply": "Hi, I'm Bloom. I'll ask you a few questions to help your care team get ready for your visit. You can skip any question. What brings you in today?",
+    "progress": 0.0
+  }
+}

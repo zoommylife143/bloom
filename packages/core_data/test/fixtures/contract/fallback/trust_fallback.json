@@ -1,0 +1,104 @@
+{
+  "method": "GET",
+  "path": "/api/sessions/f0f0f0f0f0f04a0b8c0d0e0f00000001/trust",
+  "status": 200,
+  "body": {
+    "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+    "mode": "dev",
+    "events": [
+      {
+        "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+        "node": "intake",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "finish_reason": "stop",
+          "content_chars": 42,
+          "error": "json_parse_failed",
+          "attempt": 1,
+          "json_mode": "json_object"
+        },
+        "request_id": "gen-fake-offline",
+        "latency_ms": 12,
+        "outcome": "error",
+        "created_at": "2026-11-19T10:00:00.100000Z"
+      },
+      {
+        "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+        "node": "intake",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "error": "json_parse_failed",
+          "attempt": 2,
+          "repair_skipped": "turn_budget_low"
+        },
+        "request_id": null,
+        "latency_ms": 0,
+        "outcome": "error",
+        "created_at": "2026-11-19T10:00:00.200000Z"
+      },
+      {
+        "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+        "node": "intake_fallback",
+        "mode": "dev",
+        "model_id": null,
+        "route": null,
+        "policy_required": "no_model_call",
+        "evidence": {
+          "parse_path": "fallback",
+          "after_error": "json_parse_failed"
+        },
+        "request_id": null,
+        "latency_ms": 0,
+        "outcome": "ok",
+        "created_at": "2026-11-19T10:00:00.300000Z"
+      },
+      {
+        "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+        "node": "intake",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "finish_reason": "stop",
+          "parse_path": "repair",
+          "json_mode": "json_object"
+        },
+        "request_id": "gen-fake-offline",
+        "latency_ms": 9,
+        "outcome": "ok",
+        "created_at": "2026-11-19T10:00:01.000000Z"
+      },
+      {
+        "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+        "node": "brief_fallback",
+        "mode": "dev",
+        "model_id": null,
+        "route": null,
+        "policy_required": "no_model_call",
+        "evidence": {
+          "parse_path": "fallback",
+          "after_error": "schema_validation_failed"
+        },
+        "request_id": null,
+        "latency_ms": 0,
+        "outcome": "ok",
+        "created_at": "2026-11-19T10:00:02.000000Z"
+      }
+    ],
+    "attestation": {
+      "status": "unavailable",
+      "issuer": null,
+      "audience": null,
+      "verified_claims": false,
+      "fetched_at": null,
+      "error": "offline fake model (BLOOM_FAKE_MODEL=1)"
+    }
+  }
+}

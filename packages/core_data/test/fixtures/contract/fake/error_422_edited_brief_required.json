@@ -1,0 +1,9 @@
+{
+  "method": "POST",
+  "path": "/api/briefs/563cb39d075d4b6c8020c294f0b3e3f2/decision",
+  "status": 422,
+  "body": {
+    "error": "edited_brief_required",
+    "detail": "decision=edit needs an 'edited' Brief"
+  }
+}

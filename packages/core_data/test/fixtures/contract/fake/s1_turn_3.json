@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/2438eccbd0834d9dadd3fef077b267aa/messages",
+  "status": 200,
+  "body": {
+    "reply": "Thank you. That's everything I need. Your care team will read your answers before your visit.",
+    "status": "ready",
+    "progress": 1.0,
+    "done": true,
+    "urgent": null
+  }
+}

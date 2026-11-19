@@ -1,0 +1,296 @@
+{
+  "method": "GET",
+  "path": "/api/audit",
+  "status": 200,
+  "body": {
+    "rows": [
+      {
+        "id": 41,
+        "actor": "doctor",
+        "action": "negative_test",
+        "session_id": null,
+        "created_at": "2026-11-19T09:24:51.697972Z"
+      },
+      {
+        "id": 40,
+        "actor": "doctor",
+        "action": "negative_test",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:51.602326Z"
+      },
+      {
+        "id": 39,
+        "actor": "system",
+        "action": "red_flag_locked",
+        "session_id": "efb744dd41f2426db12ac4cbd7670381",
+        "created_at": "2026-11-19T09:24:51.471039Z"
+      },
+      {
+        "id": 38,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "efb744dd41f2426db12ac4cbd7670381",
+        "created_at": "2026-11-19T09:24:51.201503Z"
+      },
+      {
+        "id": 37,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "efb744dd41f2426db12ac4cbd7670381",
+        "created_at": "2026-11-19T09:24:50.915137Z"
+      },
+      {
+        "id": 36,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "efb744dd41f2426db12ac4cbd7670381",
+        "created_at": "2026-11-19T09:24:50.622750Z"
+      },
+      {
+        "id": 35,
+        "actor": "doctor",
+        "action": "scenario_run",
+        "session_id": "efb744dd41f2426db12ac4cbd7670381",
+        "created_at": "2026-11-19T09:24:50.588527Z"
+      },
+      {
+        "id": 34,
+        "actor": "system",
+        "action": "red_flag_locked",
+        "session_id": "bf9b96f752674cf8b0304aee5da48334",
+        "created_at": "2026-11-19T09:24:50.409183Z"
+      },
+      {
+        "id": 33,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "bf9b96f752674cf8b0304aee5da48334",
+        "created_at": "2026-11-19T09:24:50.044224Z"
+      },
+      {
+        "id": 32,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "bf9b96f752674cf8b0304aee5da48334",
+        "created_at": "2026-11-19T09:24:49.660833Z"
+      },
+      {
+        "id": 31,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "bf9b96f752674cf8b0304aee5da48334",
+        "created_at": "2026-11-19T09:24:49.324287Z"
+      },
+      {
+        "id": 30,
+        "actor": "patient",
+        "action": "session_created",
+        "session_id": "bf9b96f752674cf8b0304aee5da48334",
+        "created_at": "2026-11-19T09:24:49.287618Z"
+      },
+      {
+        "id": 29,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "24da7a895ca24df2a8a3ecd1a979106c",
+        "created_at": "2026-11-19T09:24:48.764572Z"
+      },
+      {
+        "id": 28,
+        "actor": "patient",
+        "action": "session_created",
+        "session_id": "24da7a895ca24df2a8a3ecd1a979106c",
+        "created_at": "2026-11-19T09:24:48.699175Z"
+      },
+      {
+        "id": 27,
+        "actor": "doctor",
+        "action": "brief_rejected",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:48.446580Z"
+      },
+      {
+        "id": 26,
+        "actor": "doctor",
+        "action": "brief_viewed",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:48.347309Z"
+      },
+      {
+        "id": 25,
+        "actor": "system",
+        "action": "brief_generated",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:48.299763Z"
+      },
+      {
+        "id": 24,
+        "actor": "system",
+        "action": "intake_completed",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:47.935378Z"
+      },
+      {
+        "id": 23,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:47.468393Z"
+      },
+      {
+        "id": 22,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:47.123155Z"
+      },
+      {
+        "id": 21,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:46.842172Z"
+      },
+      {
+        "id": 20,
+        "actor": "patient",
+        "action": "session_created",
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "created_at": "2026-11-19T09:24:46.803981Z"
+      },
+      {
+        "id": 19,
+        "actor": "doctor",
+        "action": "brief_approved",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:46.600954Z"
+      },
+      {
+        "id": 18,
+        "actor": "doctor",
+        "action": "brief_viewed",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:46.525788Z"
+      },
+      {
+        "id": 17,
+        "actor": "system",
+        "action": "brief_generated",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:46.486190Z"
+      },
+      {
+        "id": 16,
+        "actor": "system",
+        "action": "intake_completed",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:46.200546Z"
+      },
+      {
+        "id": 15,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:45.888532Z"
+      },
+      {
+        "id": 14,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:45.563882Z"
+      },
+      {
+        "id": 13,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:45.190001Z"
+      },
+      {
+        "id": 12,
+        "actor": "patient",
+        "action": "session_created",
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "created_at": "2026-11-19T09:24:45.150724Z"
+      },
+      {
+        "id": 11,
+        "actor": "doctor",
+        "action": "brief_edited",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:44.950043Z"
+      },
+      {
+        "id": 10,
+        "actor": "doctor",
+        "action": "brief_viewed",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:44.856119Z"
+      },
+      {
+        "id": 9,
+        "actor": "system",
+        "action": "brief_generated",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:44.757733Z"
+      },
+      {
+        "id": 8,
+        "actor": "system",
+        "action": "intake_completed",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:44.431142Z"
+      },
+      {
+        "id": 7,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:44.099337Z"
+      },
+      {
+        "id": 6,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:43.800682Z"
+      },
+      {
+        "id": 5,
+        "actor": "patient",
+        "action": "message_received",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:43.419026Z"
+      },
+      {
+        "id": 4,
+        "actor": "patient",
+        "action": "session_created",
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "created_at": "2026-11-19T09:24:43.374736Z"
+      },
+      {
+        "id": 3,
+        "actor": "patient",
+        "action": "session_created",
+        "session_id": "8fccc466e8ac4e108c7f9ca969960a45",
+        "created_at": "2026-11-19T09:24:43.150753Z"
+      },
+      {
+        "id": 2,
+        "actor": "doctor",
+        "action": "login",
+        "session_id": null,
+        "created_at": "2026-11-19T09:24:42.918777Z"
+      },
+      {
+        "id": 1,
+        "actor": "patient",
+        "action": "login",
+        "session_id": null,
+        "created_at": "2026-11-19T09:24:42.880281Z"
+      }
+    ]
+  }
+}

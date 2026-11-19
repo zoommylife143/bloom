@@ -1,8 +1,15 @@
-# Bloom on one VM: docker compose up -d --build
-# Web (both Flutter apps + /api/ proxy) on port 80; API internal only; SQLite on a volume.
+# Bloom on one VM: scripts/deploy.sh   (or: docker compose up -d --build)
+# Web (both Flutter apps + /api/ proxy) on host port ${BLOOM_HTTP_PORT:-80}, IPv4 and IPv6.
+# API is internal only; SQLite on the bloom-data volume.
 # Configuration comes from .env (copy .env.example). .env is optional so the stack still
 # starts without keys (dev mode; AI calls then fail with a 502, healthz and pages work).
 name: bloom
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   api:
@@ -13,6 +20,10 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      # The database MUST live on the volume or it is lost when the container is recreated.
+      # A DATABASE_URL in .env still wins (compose interpolates it from .env).
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/bloom.db}
     volumes:
       - bloom-data:/data
     expose:
@@ -21,9 +32,10 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/healthz', timeout=2).status == 200 else 1)"]
       interval: 10s
       timeout: 3s
-      start_period: 10s
+      start_period: 15s
       retries: 5
     restart: unless-stopped
+    logging: *logging
 
   web:
     build:
@@ -36,8 +48,11 @@ services:
       api:
         condition: service_healthy
     ports:
-      - "${BLOOM_HTTP_PORT:-80}:80"
+      # No host IP given: Docker publishes on 0.0.0.0 and [::], so the Boat VM's
+      # IPv6-only public address and a local cloudflared on localhost both reach it.
+      - "${BLOOM_HTTP_PORT:-80}:8080"
     restart: unless-stopped
+    logging: *logging
 
 volumes:
   bloom-data:

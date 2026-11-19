@@ -111,18 +111,34 @@ class Store:
 
     # ----------------------------------------------------------------- messages
 
-    def add_message(self, session_id: str, role: str, text: str) -> None:
+    def add_message(self, session_id: str, role: str, text: str, meta: dict | None = None) -> None:
         self._exec(
-            "INSERT INTO messages (session_id, role, text, created_at) VALUES (?,?,?,?)",
-            (session_id, role, text, _now()),
+            "INSERT INTO messages (session_id, role, text, created_at, meta) VALUES (?,?,?,?,?)",
+            (session_id, role, text, _now(), json.dumps(meta) if meta is not None else None),
         )
         self.touch(session_id)
 
     def get_messages(self, session_id: str) -> list[dict]:
         rows = self._all(
-            "SELECT role, text, created_at FROM messages WHERE session_id = ? ORDER BY id", (session_id,)
+            "SELECT role, text, created_at, meta FROM messages WHERE session_id = ? ORDER BY id", (session_id,)
         )
-        return [dict(r) for r in rows]
+        return [{**dict(r), "meta": json.loads(r["meta"]) if r["meta"] else None} for r in rows]
+
+    # ------------------------------------------------------------- turn results
+
+    def get_turn_result(self, session_id: str, client_message_id: str) -> dict | None:
+        row = self._one(
+            "SELECT response_json FROM turn_results WHERE session_id = ? AND client_message_id = ?",
+            (session_id, client_message_id),
+        )
+        return json.loads(row["response_json"]) if row else None
+
+    def save_turn_result(self, session_id: str, client_message_id: str, response: dict) -> None:
+        self._exec(
+            "INSERT OR REPLACE INTO turn_results (session_id, client_message_id, response_json, created_at)"
+            " VALUES (?,?,?,?)",
+            (session_id, client_message_id, json.dumps(response), _now()),
+        )
 
     # ------------------------------------------------------------------- intake
 
@@ -193,7 +209,8 @@ class Store:
             """INSERT INTO briefs (id, session_id, json, generated_by, evidence_urls, review_status)
                VALUES (?,?,?,?,?,?)""",
             (bid, session_id, brief.model_dump_json(), provenance.generated_by,
-             json.dumps({"urls": provenance.evidence_urls, "created_at": provenance.created_at.isoformat()}),
+             json.dumps({"urls": provenance.evidence_urls, "created_at": provenance.created_at.isoformat(),
+                        "source": provenance.source}),
              "draft"),
         )
         return bid
@@ -207,6 +224,7 @@ class Store:
         provenance = Provenance(
             generated_by=row["generated_by"],
             evidence_urls=ev.get("urls", []),
+            source=ev.get("source", "model"),
             created_at=_dt(ev.get("created_at")) or utcnow(),
             review_status=row["review_status"],
             reviewed_by=row["reviewed_by"],

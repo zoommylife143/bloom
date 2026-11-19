@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/2438eccbd0834d9dadd3fef077b267aa/messages",
+  "status": 200,
+  "body": {
+    "reply": "Thanks. Is there any chance you could be pregnant right now? You can say yes, no or not sure.",
+    "status": "in_progress",
+    "progress": 0.3,
+    "done": false,
+    "urgent": null
+  }
+}

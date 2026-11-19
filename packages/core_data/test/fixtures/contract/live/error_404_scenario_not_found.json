@@ -1,0 +1,9 @@
+{
+  "method": "POST",
+  "path": "/api/demo/scenarios/S99/run",
+  "status": 404,
+  "body": {
+    "error": "scenario_not_found",
+    "detail": null
+  }
+}

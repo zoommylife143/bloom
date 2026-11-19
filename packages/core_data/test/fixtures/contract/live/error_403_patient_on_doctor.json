@@ -1,0 +1,9 @@
+{
+  "method": "GET",
+  "path": "/api/sessions",
+  "status": 403,
+  "body": {
+    "error": "forbidden",
+    "detail": "Doctor role required"
+  }
+}

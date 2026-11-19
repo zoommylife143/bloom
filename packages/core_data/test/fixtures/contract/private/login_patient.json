@@ -1,0 +1,10 @@
+{
+  "method": "POST",
+  "path": "/api/login",
+  "status": 200,
+  "body": {
+    "token": "<redacted>",
+    "role": "patient",
+    "expires_at": 1795123234
+  }
+}

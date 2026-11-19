@@ -15,6 +15,22 @@ One graph invocation = one patient turn:
 A session whose intake completed but whose brief failed (e.g. refused route) re-enters
 at ``deidentify`` on the next message (``resume_brief``).
 
+Unusable model output (live 2026-11-19: most intake answers were prose, not JSON):
+- The router asks for a JSON object (json_object mode in dev), shows earlier Bloom turns
+  as JSON, and makes one repair call (dev only). ``parse_path`` records which worked:
+  ``first_pass``, ``repair`` or ``fallback`` (``rule`` = urgent, no model call).
+- Intake fallback (deterministic, no model): fill the three required fields from the
+  answers by fixed rules, then ask the NEXT required field that is still missing and was
+  never asked. A question is never repeated. The intake is done as soon as the three
+  are known, or when every missing one has been asked once, or after
+  ``FALLBACK_TURN_LIMIT`` fallback turns, so it always ends well within ``MAX_TURNS``.
+- Brief fallback: if the brief's output is unusable after the repair call (or the turn
+  budget ran out), a clearly labelled DRAFT is built from the IntakeRecord with no AI
+  (``fallback_brief``). It cites only retrieved passages, its provenance says
+  ``source="fallback"``, and it still needs Confirm / Edit / Reject.
+- Neither fallback runs after a refusal or an HTTP error, and neither calls any model:
+  private mode stays fail-closed.
+
 Safety:
 - The urgent path never calls a model; it returns the fixed ``URGENT_MESSAGES`` text.
 - ``ConfidentialRouteUnavailable`` and ``ModelCallError`` propagate out of ``run_turn``
@@ -25,6 +41,9 @@ Safety:
 
 from __future__ import annotations
 
+import contextlib
+import re
+import dataclasses
 import threading
 from dataclasses import dataclass
 from typing import Any, Callable, TypedDict
@@ -58,13 +77,22 @@ PROGRESS_FIELDS = (
     "pregnant_or_postpartum", "contraception", "last_pap_hpv", "age_band", "medications",
 )
 
-# Fallback next questions when a model reply is filtered for diagnosis language.
+# Deterministic next questions: used when the model's answer was unusable, or when a model
+# reply is filtered for diagnosis language. One per required field, in this order.
 _FALLBACK_QUESTIONS = (
     ("reason_for_visit", "What brings you in today?"),
     ("age_band", "Which age group are you in: 18-24, 25-29, 30-39, 40-49, 50-64, or 65 and over?"),
     ("pregnancy_possible", "Is there any chance you could be pregnant? You can say yes, no, or not sure."),
 )
 _FALLBACK_LAST = "Is there anything else you would like your care team to know?"
+# Bloom text that counts as having asked a required field (model-worded or fixed).
+_ASKED_RES = {
+    "reason_for_visit": re.compile(r"brings you in|reason for (?:your|the|this) visit", re.I),
+    "age_band": re.compile(r"\bage\b|how old|age group", re.I),
+    "pregnancy_possible": re.compile(r"pregnan", re.I),
+}
+# After this many fallback turns in one session the intake is marked done.
+FALLBACK_TURN_LIMIT = 4
 
 
 class BloomState(TypedDict, total=False):
@@ -87,6 +115,10 @@ class BloomState(TypedDict, total=False):
     reply_filtered: bool
     urgent: dict | None
     resume_brief: bool
+    parse_path: str | None  # first_pass | repair | fallback | rule
+    brief_parse_path: str | None  # first_pass | repair | fallback
+    asked_field: str | None  # required field the fixed fallback question asks
+    force_done: bool  # fallback exhausted: finish even if a required field is unknown
 
 
 class IntakeTurn(BaseModel):
@@ -155,11 +187,161 @@ def sanitize_brief(brief: Brief, evidence: list[EvidenceItem]) -> Brief:
     return brief.model_copy(update={"screenings_possibly_due": lines})
 
 
-def _fallback_question(rec: IntakeRecord) -> str:
+# Model output that arrived but was not usable JSON. Anything else (HTTP errors,
+# timeouts) still surfaces as 502 model_error.
+_FORMAT_ERRORS = frozenset({"json_parse_failed", "schema_validation_failed"})
+# The brief also falls back when the turn budget ran out (no call made) or the call timed
+# out, so the final turn still ends in a reviewable draft. Refusals never fall back.
+_BRIEF_FALLBACK_ERRORS = _FORMAT_ERRORS | {"turn_deadline_exceeded", "APITimeoutError"}
+
+
+_AGE_RE = re.compile(r"\b(1[89]|[2-9]\d|1[01]\d)\b")
+# "I'm 34", "I am 52", "aged 40", "34 years old": an age stated outright, asked or not.
+_AGE_STATED_RE = re.compile(
+    r"\b(?:i'?m|i am|aged?)\s+(1[89]|[2-9]\d|1[01]\d)\b(?!\s*(?:days?|weeks?|months?|%|years? (?:ago|since)))"
+    r"|\b(1[89]|[2-9]\d|1[01]\d)\s*(?:years? old|yrs? old|y/?o)\b"
+)
+_BANDS = ((24, "18-24"), (29, "25-29"), (39, "30-39"), (49, "40-49"), (64, "50-64"))
+_UNSURE_RE = re.compile(r"\b(not sure|unsure|maybe|don'?t know|do not know|no idea)\b")
+_NO_RE = re.compile(
+    r"\b(no|not|nope|never|can'?t|cannot|couldn'?t|isn'?t|don'?t think|do not think|unlikely)\b"
+)
+_YES_RE = re.compile(r"\b(yes|yeah|yep|possibly|could be|might be|i'?m pregnant|i am pregnant)\b")
+_SHORT_ANSWER_WORDS = 8
+
+
+def _band(age: int) -> str:
+    return next((band for top, band in _BANDS if age <= top), "65+")
+
+
+def _pregnancy_answer(text: str) -> str | None:
+    low = text.lower().replace("’", "'")
+    if _UNSURE_RE.search(low):
+        return "unsure"
+    if _NO_RE.search(low):
+        return "no"
+    if _YES_RE.search(low):
+        return "yes"
+    return None
+
+
+def rule_extract(rec: IntakeRecord, last_bloom: str, text: str, first_patient: str | None = None) -> dict:
+    """Deterministic fallback for the three fields an intake needs to finish, used only
+    when the model's answer was unusable. Fills a field only if it is still missing, and
+    only from what the patient said (never a guess).
+
+    - reason_for_visit: the answer to "what brings you in", else the first patient message.
+    - age_band: a number after an age question, or an age stated outright ("I'm 34").
+    - pregnancy_possible: the answer to a pregnancy question when it mentions pregnancy or
+      is short; otherwise a first-person sentence that mentions pregnancy.
+    """
+    out: dict = {}
+    low = text.lower().replace("’", "'")
+    asked = last_bloom.lower()
+    if rec.reason_for_visit is None:
+        if _ASKED_RES["reason_for_visit"].search(asked) and text.strip():
+            out["reason_for_visit"] = text.strip()[:200]
+        elif first_patient and first_patient.strip():
+            out["reason_for_visit"] = first_patient.strip()[:200]
+    if rec.age_band is None:
+        stated = _AGE_STATED_RE.search(low)
+        m = _AGE_RE.search(low) if _ASKED_RES["age_band"].search(asked) else None
+        if stated:
+            out["age_band"] = _band(int(stated.group(1) or stated.group(2)))
+        elif m:
+            out["age_band"] = _band(int(m.group(1)))
+    if rec.pregnancy_possible is None:
+        answer = None
+        if "pregnan" in asked and ("pregnan" in low or len(low.split()) <= _SHORT_ANSWER_WORDS):
+            answer = _pregnancy_answer(low)
+        if answer is None:
+            for sentence in re.split(r"[.!?;\n]+", low):
+                if "pregnan" in sentence and re.search(r"\b(i|i'?m|me|my)\b", sentence):
+                    answer = _pregnancy_answer(sentence)
+                    if answer:
+                        break
+        if answer:
+            out["pregnancy_possible"] = answer
+    return out
+
+
+def asked_fields(bloom_messages: list[dict]) -> set[str]:
+    """Required fields Bloom has already asked about (fixed fallback or model wording)."""
+    asked: set[str] = set()
+    for m in bloom_messages:
+        meta = m.get("meta") or {}
+        if meta.get("asked_field"):
+            asked.add(meta["asked_field"])
+        for field, pattern in _ASKED_RES.items():
+            if pattern.search(m.get("text") or ""):
+                asked.add(field)
+    return asked
+
+
+def next_fallback_question(rec: IntakeRecord, asked: set[str]) -> tuple[str | None, str]:
+    """(field, question) for the next required field that is missing and never asked,
+    else (None, the closing "anything else" question)."""
     for field, question in _FALLBACK_QUESTIONS:
-        if getattr(rec, field) is None:
-            return question
-    return _FALLBACK_LAST
+        if getattr(rec, field) is None and field not in asked:
+            return field, question
+    return None, _FALLBACK_LAST
+
+
+_FIELD_LABELS = {
+    "reason_for_visit": "Reason for visit", "lmp_date": "Last period started",
+    "cycle_length_days": "Cycle length (days)", "bleeding_pattern": "Bleeding pattern",
+    "pregnancy_possible": "Pregnancy possible", "pregnant_or_postpartum": "Pregnant or postpartum",
+    "gravida": "Gravida", "para": "Para", "contraception": "Contraception",
+    "last_pap_hpv": "Last Pap/HPV", "last_mammogram": "Last mammogram", "sti_concerns": "STI concerns",
+    "medications": "Medications", "allergies": "Allergies", "age_band": "Age group",
+    "other_notes": "Other notes",
+}
+_MISSING_QUESTIONS = {
+    "reason_for_visit": "What brings you in today?",
+    "age_band": "Which age group are you in?",
+    "pregnancy_possible": "Is there any chance you could be pregnant?",
+}
+FALLBACK_BRIEF_LABEL = "DRAFT (automatic fallback, written without AI: the model's answer was unusable)."
+
+
+def _fmt(value: Any) -> str:
+    return ", ".join(str(v) for v in value) if isinstance(value, list) else str(value)
+
+
+def fallback_brief(rec: IntakeRecord, evidence: list[EvidenceItem]) -> Brief:
+    """A deterministic, clearly labelled DRAFT built only from the IntakeRecord and the
+    retrieved passages. No model, no outside knowledge, no diagnosis. Screening lines
+    point only at retrieved passages (for the physician to read), never at anything else."""
+    data = rec.model_dump(mode="json")
+    subj = [f"{_FIELD_LABELS[k]}: {_fmt(data[k])}" for k in (
+        "reason_for_visit", "lmp_date", "cycle_length_days", "bleeding_pattern", "contraception",
+        "medications", "allergies", "sti_concerns", "other_notes") if data.get(k) not in (None, "", [])]
+    if rec.symptom is not None:
+        sym = {k: v for k, v in rec.symptom.model_dump().items() if v is not None}
+        if sym:
+            subj.append("Symptom: " + "; ".join(f"{k.replace('_', ' ')} {v}" for k, v in sym.items()))
+    obj = [f"{_FIELD_LABELS[k]}: {_fmt(data[k])}" for k in (
+        "age_band", "pregnancy_possible", "pregnant_or_postpartum", "gravida", "para",
+        "last_pap_hpv", "last_mammogram") if data.get(k) not in (None, "")]
+    missing = [f for f in IntakeRecord.REQUIRED_FOR_DONE if getattr(rec, f) is None]
+    flags = ["Built without AI from the patient's structured answers; verify every line before use."]
+    flags += [f"{_FIELD_LABELS[f]} not recorded in the intake." for f in missing]
+    lines = [
+        ScreeningLine(text=f"Retrieved guideline passage for physician review: {e.title or e.query}",
+                      source_url=e.url)
+        for e in evidence
+    ] or [ScreeningLine(text=NO_GUIDELINE, source_url=None)]
+    return Brief(
+        subjective=f"{FALLBACK_BRIEF_LABEL} Patient-reported: " + ("; ".join(subj) if subj else "nothing recorded") + ".",
+        objective="Patient-reported structured data only; no exam has happened. "
+        + ("; ".join(obj) if obj else "No structured data recorded") + ".",
+        assessment_considerations=f"{FALLBACK_BRIEF_LABEL} No assessment was drafted. Physician to evaluate.",
+        plan_considerations=f"{FALLBACK_BRIEF_LABEL} No plan was drafted. Physician to decide; "
+        "review any retrieved guideline passages listed below.",
+        flags=flags,
+        screenings_possibly_due=lines,
+        suggested_questions=[_MISSING_QUESTIONS[f] for f in missing],
+    )
 
 
 @dataclass
@@ -171,6 +353,9 @@ class TurnResult:
     urgent: dict | None = None
     done: bool = False
     brief_id: str | None = None
+    # How this turn's model output was obtained (see module docstring); None if no intake ran.
+    parse_path: str | None = None
+    brief_parse_path: str | None = None
 
 
 class SessionLocked(Exception):
@@ -206,16 +391,53 @@ class BloomGraph:
         rec = IntakeRecord.model_validate(s["intake"])
         history = s["messages"] + [{"role": "patient", "text": s["text"]}]
         msgs = intake_messages(history, rec, s["turn"])
-        parsed = self._complete_validated(msgs, IntakeTurn, node="intake", session_id=s["session_id"])
+        bloom_msgs = [m for m in s["messages"] if m["role"] == "bloom"]
+        asked = asked_fields(bloom_msgs)
+        asked_field: str | None = None
+        force_done = False
+        try:
+            parsed, event = self._complete_validated(
+                msgs, IntakeTurn, node="intake", session_id=s["session_id"], with_event=True
+            )
+            parse_path = event.evidence.get("parse_path", "first_pass")
+        except ModelCallError as exc:
+            # The model answered, but not in the JSON shape, even after the repair call.
+            # The error TrustEvents are already stored. Deterministic turn instead of a
+            # 502; no other model is called. HTTP errors and timeouts still raise.
+            error = exc.event.evidence.get("error")
+            if error not in _FORMAT_ERRORS or not self.settings.bloom_deterministic_fallback:
+                raise
+            parse_path = "fallback"
+            self.store.audit("system", "intake_fallback_question", s["session_id"])
+            last_bloom = bloom_msgs[-1]["text"] if bloom_msgs else ""
+            first_patient = next((m["text"] for m in history if m["role"] == "patient"), None)
+            fields = rule_extract(rec, last_bloom, s["text"], first_patient=first_patient)
+            filled = merge_intake(rec, fields)
+            asked_field, question = next_fallback_question(filled, asked)
+            fallback_turns = 1 + sum(1 for m in bloom_msgs if (m.get("meta") or {}).get("parse_path") == "fallback")
+            force_done = filled.is_complete() or asked_field is None or fallback_turns >= FALLBACK_TURN_LIMIT
+            parsed = IntakeTurn(reply=question, extracted=fields, done=force_done)
+            self.store.record_trust_event(TrustEvent(
+                session_id=s["session_id"], node="intake_fallback", mode=s["mode"], model_id=None,
+                policy_required="no_model_call", outcome=TrustOutcome.OK,
+                evidence={"parse_path": "fallback", "after_error": error, "no_model_call": True,
+                          "fields_filled": sorted(fields), "asks": asked_field, "done": force_done,
+                          "fallback_turn": fallback_turns},
+            ))
         merged = merge_intake(rec, parsed.extracted)
-        reply, filtered = safety.filter_patient_reply(parsed.reply.strip(), _fallback_question(merged))
+        filter_field, filter_question = next_fallback_question(merged, asked)
+        reply, filtered = safety.filter_patient_reply(parsed.reply.strip(), filter_question)
         if filtered:
+            asked_field = filter_field
             self.store.audit("system", "reply_filtered", s["session_id"])
         return {
             "intake": merged.model_dump(mode="json"),
             "reply": reply,
             "done": parsed.done,
             "reply_filtered": filtered,
+            "parse_path": parse_path,
+            "asked_field": asked_field,
+            "force_done": force_done,
         }
 
     def _safety_post(self, s: BloomState) -> dict:
@@ -228,20 +450,27 @@ class BloomGraph:
         hit = RedFlagHit.model_validate(s["red_flag"])
         payload = urgent_payload(hit.rule_id)
         self.store.add_message(sid, "patient", s["text"])
-        self.store.add_message(sid, "bloom", payload["body"])
+        self.store.add_message(sid, "bloom", payload["body"], meta={"parse_path": s.get("parse_path") or "rule"})
         self.store.save_intake(sid, IntakeRecord.model_validate(s["intake"]))
         self.store.add_red_flag(sid, hit)
         self.store.set_status(sid, SessionStatus.URGENT)
         self.store.audit("system", "red_flag_locked", sid)
-        return {"status": SessionStatus.URGENT.value, "reply": payload["body"], "urgent": payload}
+        return {"status": SessionStatus.URGENT.value, "reply": payload["body"], "urgent": payload,
+                "parse_path": s.get("parse_path") or "rule"}
 
     def _save_turn(self, s: BloomState) -> dict:
         sid = s["session_id"]
         rec = IntakeRecord.model_validate(s["intake"])
-        final = (s.get("done") and rec.is_complete()) or s["turn"] >= MAX_TURNS
+        final = (s.get("done") and (rec.is_complete() or s.get("force_done"))) or s["turn"] >= MAX_TURNS
         reply = CLOSING_MESSAGE if final else s["reply"]
+        meta = {
+            "extracted": rec.model_dump(mode="json", exclude_none=True, exclude_defaults=True),
+            "done": bool(final),
+            "parse_path": s.get("parse_path"),
+            "asked_field": None if final else s.get("asked_field"),
+        }
         self.store.add_message(sid, "patient", s["text"])
-        self.store.add_message(sid, "bloom", reply)
+        self.store.add_message(sid, "bloom", reply, meta=meta)
         self.store.save_intake(sid, rec, completed=bool(final))
         if final:
             self.store.audit("system", "intake_completed", sid)
@@ -275,43 +504,53 @@ class BloomGraph:
         rec = IntakeRecord.model_validate(s["intake"])
         evidence = [EvidenceItem.model_validate(e) for e in s.get("evidence") or []]
         msgs = brief_messages(rec, evidence)
-        brief, event = self._complete_validated(
-            msgs, Brief, node="brief", session_id=sid, with_event=True
-        )
-        brief = sanitize_brief(brief, evidence)
-        provenance = Provenance(
-            generated_by=f"{event.model_id or 'unknown-model'} ({event.mode})",
-            evidence_urls=[e.url for e in evidence],
-        )
+        try:
+            brief, event = self._complete_validated(msgs, Brief, node="brief", session_id=sid, with_event=True)
+        except ModelCallError as exc:
+            error = exc.event.evidence.get("error")
+            if error not in _BRIEF_FALLBACK_ERRORS or not self.settings.bloom_deterministic_fallback:
+                raise
+            brief = fallback_brief(rec, evidence)
+            provenance = Provenance(
+                generated_by=f"deterministic-fallback ({s['mode']})",
+                evidence_urls=[e.url for e in evidence], source="fallback",
+            )
+            self.store.record_trust_event(TrustEvent(
+                session_id=sid, node="brief_fallback", mode=s["mode"], model_id=None,
+                policy_required="no_model_call", outcome=TrustOutcome.OK,
+                evidence={"parse_path": "fallback", "after_error": error, "no_model_call": True,
+                          "citations": len([x for x in brief.screenings_possibly_due if x.source_url])},
+            ))
+            path = "fallback"
+            self.store.audit("system", "brief_fallback_draft", sid)
+        else:
+            brief = sanitize_brief(brief, evidence)
+            provenance = Provenance(
+                generated_by=f"{event.model_id or 'unknown-model'} ({event.mode})",
+                evidence_urls=[e.url for e in evidence],
+            )
+            path = event.evidence.get("parse_path", "first_pass")
         bid = self.store.save_brief(sid, brief, provenance)
         self.store.set_status(sid, SessionStatus.READY)
         self.store.audit("system", "brief_generated", sid)
-        return {"brief": brief.model_dump(mode="json"), "brief_id": bid, "status": SessionStatus.READY.value}
+        return {"brief": brief.model_dump(mode="json"), "brief_id": bid, "status": SessionStatus.READY.value,
+                "brief_parse_path": path}
 
     # ---------------------------------------------------------------- helpers
 
     def _complete_validated(
         self, msgs: list[dict], model: type[BaseModel], *, node: str, session_id: str, with_event: bool = False
     ):
-        """One model call; one more only in dev mode if the JSON has the wrong shape.
+        """One model call, plus (dev mode only) one repair call inside the router if the
+        output is not JSON or does not match ``model``.
 
         Refusals (ConfidentialRouteUnavailable) propagate immediately: no retry, no fallback.
         """
-        attempts = 2 if self.settings.bloom_mode == "dev" else 1
-        last_event: TrustEvent | None = None
-        for _ in range(attempts):
-            text, event = self.router.complete(msgs, node=node, session_id=session_id, json_mode=True)
-            last_event = event
-            try:
-                value = model.model_validate_json(text)
-            except ValidationError:
-                continue
-            return (value, event) if with_event else value
-        bad = last_event.model_copy(update={  # type: ignore[union-attr]
-            "outcome": TrustOutcome.ERROR, "evidence": {**last_event.evidence, "error": "schema_validation_failed"},  # type: ignore[union-attr]
-        })
-        self.store.record_trust_event(bad)
-        raise ModelCallError(bad, f"{node} output did not match the expected schema")
+        text, event = self.router.complete(
+            msgs, node=node, session_id=session_id, json_mode=True, validate=model.model_validate_json
+        )
+        value = model.model_validate_json(text)
+        return (value, event) if with_event else value
 
     # ------------------------------------------------------------------ graph
 
@@ -351,17 +590,27 @@ class BloomGraph:
         with self._locks_guard:
             return self._locks.setdefault(session_id, threading.Lock())
 
-    def run_turn(self, session_id: str, text: str) -> TurnResult:
+    def run_turn(self, session_id: str, text: str, client_message_id: str | None = None) -> TurnResult:
         """Run one patient turn. Raises SessionNotFound, SessionLocked,
-        ConfidentialRouteUnavailable or ModelCallError."""
+        ConfidentialRouteUnavailable or ModelCallError.
+
+        With ``client_message_id``, a resend of a turn that already succeeded returns the
+        stored result (nothing is appended, no model call). The per-session lock makes a
+        resend that arrives while the first request is still running wait for it.
+        """
         with self._lock(session_id):
             session = self.store.get_session(session_id)
             if session is None:
                 raise SessionNotFound(session_id)
+            if client_message_id:
+                stored = self.store.get_turn_result(session_id, client_message_id)
+                if stored is not None:
+                    return TurnResult(**stored)
             if session["status"] != SessionStatus.IN_PROGRESS.value:
                 raise SessionLocked(session["status"])
             rec, completed_at = self.store.get_intake(session_id)
-            history = [{"role": m["role"], "text": m["text"]} for m in self.store.get_messages(session_id)]
+            history = [{"role": m["role"], "text": m["text"], "meta": m.get("meta")}
+                       for m in self.store.get_messages(session_id)]
             turn = sum(1 for m in history if m["role"] == "patient") + 1
             self.store.audit("patient", "message_received", session_id)
             state: BloomState = {
@@ -382,11 +631,17 @@ class BloomGraph:
                 "done": False,
                 "urgent": None,
                 "resume_brief": completed_at is not None,
+                "parse_path": None,
+                "brief_parse_path": None,
+                "asked_field": None,
+                "force_done": False,
             }
-            out = self.graph.invoke(state)
+            deadline = getattr(self.router, "deadline", None)
+            with deadline(self.settings.turn_budget_s) if deadline else contextlib.nullcontext():
+                out = self.graph.invoke(state)
             status = out.get("status") or session["status"]
             final_rec = IntakeRecord.model_validate(out["intake"])
-            return TurnResult(
+            result = TurnResult(
                 session_id=session_id,
                 reply=out.get("reply") or "",
                 status=status,
@@ -394,4 +649,9 @@ class BloomGraph:
                 urgent=out.get("urgent"),
                 done=status != SessionStatus.IN_PROGRESS.value,
                 brief_id=out.get("brief_id"),
+                parse_path=out.get("parse_path"),
+                brief_parse_path=out.get("brief_parse_path"),
             )
+            if client_message_id:
+                self.store.save_turn_result(session_id, client_message_id, dataclasses.asdict(result))
+            return result

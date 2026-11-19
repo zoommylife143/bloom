@@ -1,0 +1,48 @@
+{
+  "method": "GET",
+  "path": "/api/sessions",
+  "status": 200,
+  "body": {
+    "sessions": [
+      {
+        "session_id": "885ef48b6f5d46a2a9ba24cc1cb89b7d",
+        "scenario_id": "S7",
+        "mode": "dev",
+        "status": "urgent",
+        "created_at": "2026-11-19T09:21:23.236230Z",
+        "updated_at": "2026-11-19T09:21:31.602866Z",
+        "red_flag_rule": "R2",
+        "brief_id": null,
+        "review_status": null,
+        "age_band": null,
+        "reason_for_visit": "heavier bleeding than usual"
+      },
+      {
+        "session_id": "c677ef2963da47789f0de5ecea77ebbf",
+        "scenario_id": "S1",
+        "mode": "dev",
+        "status": "in_progress",
+        "created_at": "2026-11-19T09:20:58.071463Z",
+        "updated_at": "2026-11-19T09:21:23.112522Z",
+        "red_flag_rule": null,
+        "brief_id": null,
+        "review_status": null,
+        "age_band": "30-39",
+        "reason_for_visit": "Routine checkup; thinks Pap smear may be overdue"
+      },
+      {
+        "session_id": "400ca1aa516947e892f52e133d89d090",
+        "scenario_id": null,
+        "mode": "dev",
+        "status": "in_progress",
+        "created_at": "2026-11-19T09:20:57.896806Z",
+        "updated_at": "2026-11-19T09:20:57.995994Z",
+        "red_flag_rule": null,
+        "brief_id": null,
+        "review_status": null,
+        "age_band": null,
+        "reason_for_visit": null
+      }
+    ]
+  }
+}

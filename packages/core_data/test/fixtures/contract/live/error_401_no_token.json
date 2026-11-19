@@ -1,0 +1,9 @@
+{
+  "method": "POST",
+  "path": "/api/sessions",
+  "status": 401,
+  "body": {
+    "error": "unauthorized",
+    "detail": "Send Authorization: Bearer <token> from POST /api/login"
+  }
+}

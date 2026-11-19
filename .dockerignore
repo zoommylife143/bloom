@@ -21,3 +21,14 @@ docs
 **/.dart_tool
 **/.flutter-plugins-dependencies
 **/coverage
+
+# Not needed in any image.
+**/node_modules
+**/.idea
+**/.vscode
+**/.flutter-plugins
+apps/*/test
+packages/*/test
+server/tests
+scripts
+deploy/README.md

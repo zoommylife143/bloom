@@ -1,0 +1,62 @@
+{
+  "method": "POST",
+  "path": "/api/briefs/563cb39d075d4b6c8020c294f0b3e3f2/decision",
+  "status": 200,
+  "body": {
+    "brief_id": "563cb39d075d4b6c8020c294f0b3e3f2",
+    "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+    "brief": {
+      "subjective": "Synthetic offline draft: patient requests a routine gynecology visit.",
+      "objective": "Patient-reported data only; no exam yet.",
+      "assessment_considerations": "Physician to consider routine screening intervals.",
+      "plan_considerations": "Edited by the synthetic reviewer.",
+      "flags": [],
+      "screenings_possibly_due": [
+        {
+          "text": "Cervical screening may be due",
+          "source_url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening"
+        }
+      ],
+      "suggested_questions": [
+        "When was your last screening?"
+      ]
+    },
+    "original_brief": {
+      "subjective": "Synthetic offline draft: patient requests a routine gynecology visit.",
+      "objective": "Patient-reported data only; no exam yet.",
+      "assessment_considerations": "Physician to consider routine screening intervals.",
+      "plan_considerations": "Consider screening per guideline.",
+      "flags": [],
+      "screenings_possibly_due": [
+        {
+          "text": "Cervical screening may be due",
+          "source_url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening"
+        }
+      ],
+      "suggested_questions": [
+        "When was your last screening?"
+      ]
+    },
+    "edited": true,
+    "provenance": {
+      "generated_by": "bloom-fake/offline (dev)",
+      "evidence_urls": [
+        "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening"
+      ],
+      "created_at": "2026-11-19T09:24:44.659032Z",
+      "review_status": "edited",
+      "reviewed_by": "Dr. Demo",
+      "reviewed_at": "2026-11-19T09:24:44.915570Z"
+    },
+    "evidence": [
+      {
+        "query": "cervical cancer screening interval age 30-39 last test over 3 years",
+        "url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening",
+        "title": "Recommendation: Cervical Cancer: Screening | United States Preventive Services Taskforce",
+        "passage": "For women aged 30 to 65 years, the USPSTF recommends screening every 3 years with cervical cytology alone, every 5 years with high-risk human papillomavirus (hrHPV) testing alone, or every 5 years with hrHPV testing in combination with cytology (cotesting).",
+        "retrieved_at": "2026-11-19T00:00:00Z"
+      }
+    ],
+    "guideline_updates": []
+  }
+}

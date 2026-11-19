@@ -60,6 +60,12 @@ Output JSON only, no other text:
 {{"reply": "<your one question to the patient>", "extracted": {{<only fields learned from the conversation>}}, "done": <true|false>}}
 """
 
+INTAKE_JSON_REMINDER = (
+    "Now answer the patient's last message. Output ONE JSON object only, no other text, with all "
+    'three keys: {"reply": "<your one question>", "extracted": {<every field learned so far in '
+    'the whole conversation>}, "done": <true|false>}'
+)
+
 BRIEF_SYSTEM_PROMPT = """You draft a pre-visit brief for a gynecologist. The physician reviews it
 and decides to confirm, edit or reject it. It is a draft, never a diagnosis.
 
@@ -94,8 +100,37 @@ def intake_messages(history: list[dict], intake: IntakeRecord, turn: int) -> lis
         {"role": "system", "content": state},
     ]
     for m in history:
-        msgs.append({"role": "user" if m["role"] == "patient" else "assistant", "content": m["text"]})
+        if m["role"] == "patient":
+            msgs.append({"role": "user", "content": m["text"]})
+        else:
+            msgs.append({"role": "assistant", "content": assistant_turn_json(m)})
+    # Root cause of the live format failures (TrustedRouter z-ai/glm-5.3-flash,
+    # 2026-11-19): earlier Bloom turns were sent as plain text, so the model imitated them
+    # and answered in prose. Earlier turns are now shown as the JSON object Bloom's turn
+    # produced (assistant_turn_json), and the reminder goes last, after the new patient turn.
+    reminder = INTAKE_JSON_REMINDER
+    if intake.is_complete():
+        reminder += (
+            "\nreason_for_visit, age_band and pregnancy_possible are already known. Set \"done\": true "
+            "now unless an important field is still unasked."
+        )
+    msgs.append({"role": "system", "content": reminder})
     return msgs
+
+
+def assistant_turn_json(message: dict) -> str:
+    """An earlier Bloom turn as the JSON object the intake node returns.
+
+    ``message["meta"]`` (stored with each Bloom message since 2026-11-19) holds the fields
+    known after that turn and its ``done`` flag; older rows and the opening question have
+    none and show ``"extracted": {}``.
+    """
+    meta = message.get("meta") or {}
+    extracted = meta.get("extracted") if isinstance(meta.get("extracted"), dict) else {}
+    return json.dumps(
+        {"reply": message["text"], "extracted": extracted, "done": bool(meta.get("done", False))},
+        ensure_ascii=False,
+    )
 
 
 def format_evidence(evidence: list[EvidenceItem]) -> str:

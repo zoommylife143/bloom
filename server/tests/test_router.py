@@ -122,7 +122,8 @@ def test_dev_mode_sends_zdr_floor_no_fallbacks_and_model():
     body = route.body()
     assert body["model"] == "fortanix/glm-5.3-flash"
     assert body["provider"] == {"min_privacy": "zdr", "allow_fallbacks": False}
-    assert "response_format" not in body  # documented choice: JSON-in-text
+    assert body["response_format"] == {"type": "json_object"}  # TR_JSON_MODE default on
+    assert body["temperature"] == 0.2  # TR_TEMPERATURE default
     assert route.calls[0].headers["x-inference-receipt"] == "true"
     assert json.loads(text) == {"ok": True}
     assert event.outcome == TrustOutcome.OK
@@ -193,13 +194,44 @@ def test_dev_unrelated_400_is_error():
 
 
 def test_server_error_is_not_retried():
-    route = FakeGateway(err(503, {"error": {"message": "down"}}))
+    route = FakeGateway(err(500, {"error": {"message": "down"}}))
     events: list[TrustEvent] = []
     with pytest.raises(ModelCallError) as info:
         _router(route, _settings(), events).complete([{"role": "user", "content": "x"}], node="n")
     assert route.call_count == 1
-    assert info.value.event.evidence["http_status"] == 503
+    assert info.value.event.evidence["http_status"] == 500
     assert len(events) == 1
+
+
+@pytest.mark.parametrize("status", [429, 503, 529])
+def test_dev_overload_is_retried_once_on_same_model(status):
+    route = FakeGateway(err(status, {"error": {"message": "System is overloaded"}}), ok('{"ok": true}'))
+    events: list[TrustEvent] = []
+    router = _router(route, _settings(), events)
+    router._overload_backoff_s = 0
+    text, event = router.complete([{"role": "user", "content": "x"}], node="n")
+    assert text == '{"ok": true}'
+    assert route.call_count == 2
+    assert [json.loads(c.content)["model"] for c in route.calls] == ["fortanix/glm-5.3-flash"] * 2
+    assert [e.outcome for e in events] == [TrustOutcome.ERROR, TrustOutcome.OK]
+
+
+def test_dev_overload_gives_up_after_one_retry():
+    route = FakeGateway(err(529, {"error": {"message": "System is overloaded"}}))
+    router = _router(route, _settings(), [])
+    router._overload_backoff_s = 0
+    with pytest.raises(ModelCallError):
+        router.complete([{"role": "user", "content": "x"}], node="n")
+    assert route.call_count == 2
+
+
+def test_private_overload_is_never_retried():
+    route = FakeGateway(err(529, {"error": {"message": "System is overloaded"}}))
+    router = _router(route, _settings(bloom_mode="private", private_model_id="conf/model"), [])
+    router._overload_backoff_s = 0
+    with pytest.raises((ModelCallError, ConfidentialRouteUnavailable)):
+        router.complete([{"role": "user", "content": "x"}], node="n")
+    assert route.call_count == 1
 
 
 def test_connection_error_is_model_call_error():
@@ -306,3 +338,119 @@ def test_extract_json_variants():
     assert json.loads(extract_json('```json\n{"a": 1}\n```')) == {"a": 1}
     assert extract_json("[1, 2]") is None
     assert extract_json("nothing") is None
+
+
+def test_reasoning_effort_sent_when_configured_and_omitted_when_empty():
+    route = FakeGateway(ok('{"ok": true}'))
+    _router(route, _settings(tr_reasoning_effort="low"), []).complete(
+        [{"role": "user", "content": "hi"}], node="intake", session_id="s1"
+    )
+    assert route.body()["reasoning"] == {"effort": "low"}
+
+    route = FakeGateway(ok('{"ok": true}'))
+    _router(route, _settings(tr_reasoning_effort=""), []).complete(
+        [{"role": "user", "content": "hi"}], node="intake", session_id="s1"
+    )
+    assert "reasoning" not in route.body()
+
+
+def test_extract_json_prefers_the_last_complete_object():
+    from app.router import extract_json
+    assert extract_json('Draft: {"reply": "a"} Final: {"reply": "b", "done": false}') == '{"reply": "b", "done": false}'
+    assert extract_json('{bad} then {"ok": 1}') == '{"ok": 1}'
+    assert extract_json("```json\n{\"a\": 3}\n```") == '{"a": 3}'
+    assert extract_json("no json here") is None
+
+
+# ------------------------------------------- json_object mode and repair (2026-11-19)
+
+JSON_MODE_400 = {"error": {"type": "bad_request", "code": "unsupported_parameter",
+                           "message": "No endpoint supports response_format json_object"}}
+
+
+def test_json_mode_400_retries_once_without_it_and_remembers():
+    route = FakeGateway(err(400, JSON_MODE_400), ok('{"a": 1}'), ok('{"b": 2}'))
+    events: list[TrustEvent] = []
+    router = _router(route, _settings(), events)
+    text, event = router.complete([{"role": "user", "content": "x"}], node="intake")
+    assert json.loads(text) == {"a": 1}
+    assert route.call_count == 2
+    assert route.body(0)["response_format"] == {"type": "json_object"}
+    assert "response_format" not in route.body(1)
+    assert router.json_mode_rejected is True
+    assert event.evidence["json_mode"] == "dropped_after_400" and event.evidence["parse_path"] == "first_pass"
+    assert events[0].outcome == TrustOutcome.ERROR and events[0].evidence["json_mode"] == "rejected"
+    router.complete([{"role": "user", "content": "x"}], node="intake")
+    assert route.call_count == 3 and "response_format" not in route.body(2)  # remembered
+
+
+def test_json_mode_documented_privacy_refusal_is_not_retried():
+    route = FakeGateway(err(400, REFUSAL_400))
+    router = _router(route, _settings(), [])
+    with pytest.raises(ConfidentialRouteUnavailable):
+        router.complete([{"role": "user", "content": "x"}], node="n")
+    assert route.call_count == 1 and router.json_mode_rejected is False
+
+
+def test_json_mode_400_then_another_400_is_not_remembered():
+    route = FakeGateway(err(400, JSON_MODE_400), err(400, {"error": {"message": "no route for this provider"}}))
+    router = _router(route, _settings(), [])
+    with pytest.raises(ConfidentialRouteUnavailable):
+        router.complete([{"role": "user", "content": "x"}], node="n")
+    assert route.call_count == 2 and router.json_mode_rejected is False
+
+
+def test_json_mode_flag_off_and_private_mode_never_send_response_format():
+    route = FakeGateway(ok('{"a": 1}'))
+    _router(route, _settings(tr_json_mode=False), []).complete([{"role": "user", "content": "x"}], node="n")
+    assert "response_format" not in route.body(0)
+    route = FakeGateway(ok('{"a": 1}'))
+    _router(route, _settings(bloom_mode="private", private_model_id="conf/m"), []).complete(
+        [{"role": "user", "content": "x"}], node="n")
+    assert "response_format" not in route.body(0)
+
+
+def test_repair_call_sends_the_bad_output_back_and_reports_the_path():
+    from app.router import REPAIR_INSTRUCTION
+    route = FakeGateway(ok("Sure! How old are you?"), ok('{"a": 1}'))
+    events: list[TrustEvent] = []
+    text, event = _router(route, _settings(), events).complete([{"role": "user", "content": "x"}], node="n")
+    assert json.loads(text) == {"a": 1}
+    msgs = route.body(1)["messages"]
+    assert msgs[-2] == {"role": "assistant", "content": "Sure! How old are you?"}
+    assert msgs[-1] == {"role": "user", "content": REPAIR_INSTRUCTION}
+    assert event.evidence["parse_path"] == "repair"
+    assert events[0].evidence["error"] == "json_parse_failed" and events[0].evidence["attempt"] == 1
+
+
+def test_repair_is_skipped_when_the_turn_budget_is_low():
+    route = FakeGateway(ok("prose"))
+    router = _router(route, _settings(), [])
+    with router.deadline(5.0):
+        with pytest.raises(ModelCallError) as info:
+            router.complete([{"role": "user", "content": "x"}], node="n")
+    assert route.call_count == 1
+    assert info.value.event.evidence["repair_skipped"] == "turn_budget_low"
+
+
+def test_validate_picks_the_last_object_that_matches_the_shape():
+    route = FakeGateway(ok('{"reply": "draft", "extracted": {}} then {"note": 1}'))
+
+    def validate(t):
+        if "reply" not in json.loads(t):
+            raise ValueError("shape")
+
+    text, event = _router(route, _settings(), []).complete(
+        [{"role": "user", "content": "x"}], node="n", validate=validate)
+    assert json.loads(text)["reply"] == "draft" and route.call_count == 1
+
+
+def test_schema_failure_after_repair_reports_schema_validation_failed():
+    route = FakeGateway(ok('{"nope": 1}'))
+
+    def validate(t):
+        raise ValueError("shape")
+
+    with pytest.raises(ModelCallError) as info:
+        _router(route, _settings(), []).complete([{"role": "user", "content": "x"}], node="n", validate=validate)
+    assert route.call_count == 2 and info.value.event.evidence["error"] == "schema_validation_failed"

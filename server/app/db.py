@@ -20,7 +20,10 @@ CREATE TABLE IF NOT EXISTS messages (
     session_id TEXT NOT NULL REFERENCES sessions(id),
     role TEXT NOT NULL,
     text TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    -- Bloom turns only: JSON {"extracted", "done", "parse_path", "asked_field"} so later
+    -- intake prompts can show the turn as JSON and the fallback never repeats a question.
+    meta TEXT
 );
 CREATE TABLE IF NOT EXISTS intake_records (
     session_id TEXT PRIMARY KEY REFERENCES sessions(id),
@@ -83,6 +86,15 @@ CREATE TABLE IF NOT EXISTS guideline_updates (
     change_summary TEXT NOT NULL,
     monitor_id TEXT
 );
+-- Idempotent resends: the response to a patient turn, keyed by the client's message id.
+-- Holds the same reply text Bloom already stored in messages; no new patient text.
+CREATE TABLE IF NOT EXISTS turn_results (
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    client_message_id TEXT NOT NULL,
+    response_json TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (session_id, client_message_id)
+);
 CREATE INDEX IF NOT EXISTS guideline_updates_detected ON guideline_updates (detected_at);
 """
 
@@ -96,6 +108,7 @@ TABLES = (
     "trust_events",
     "audit_log",
     "guideline_updates",
+    "turn_results",
 )
 
 
@@ -111,4 +124,7 @@ def init_db(conn: sqlite3.Connection) -> None:
     cols = {r[1] for r in conn.execute("PRAGMA table_info(evidence)")}
     if "title" not in cols:  # databases created before the title column
         conn.execute("ALTER TABLE evidence ADD COLUMN title TEXT")
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(messages)")}
+    if "meta" not in cols:  # databases created before the meta column
+        conn.execute("ALTER TABLE messages ADD COLUMN meta TEXT")
     conn.commit()

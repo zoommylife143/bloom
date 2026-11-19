@@ -144,8 +144,11 @@ class Brief(BaseModel):
 
 
 class Provenance(BaseModel):
-    generated_by: str  # "<model_id> (<mode>)"
+    generated_by: str  # "<model_id> (<mode>)", or "deterministic-fallback (<mode>)"
     evidence_urls: list[str] = Field(default_factory=list)
+    # "model": drafted by the model. "fallback": the model's output was unusable, so the
+    # server built a labelled DRAFT from the IntakeRecord with no AI (graph.fallback_brief).
+    source: Literal["model", "fallback"] = "model"
     created_at: datetime = Field(default_factory=utcnow)
     review_status: Literal["draft", "approved", "edited", "rejected"] = "draft"
     reviewed_by: str | None = None

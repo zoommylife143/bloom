@@ -1,0 +1,121 @@
+{
+  "method": "GET",
+  "path": "/api/sessions/2438eccbd0834d9dadd3fef077b267aa/trust",
+  "status": 200,
+  "body": {
+    "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+    "mode": "dev",
+    "events": [
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "node": "intake",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "response_id": "gen-fake-offline",
+          "finish_reason": "stop",
+          "served_model": "bloom-fake/offline"
+        },
+        "request_id": "gen-fake-offline",
+        "latency_ms": 22,
+        "outcome": "ok",
+        "created_at": "2026-11-19T09:24:43.488698Z"
+      },
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "node": "intake",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "response_id": "gen-fake-offline",
+          "finish_reason": "stop",
+          "served_model": "bloom-fake/offline"
+        },
+        "request_id": "gen-fake-offline",
+        "latency_ms": 1,
+        "outcome": "ok",
+        "created_at": "2026-11-19T09:24:43.839867Z"
+      },
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "node": "intake",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "response_id": "gen-fake-offline",
+          "finish_reason": "stop",
+          "served_model": "bloom-fake/offline"
+        },
+        "request_id": "gen-fake-offline",
+        "latency_ms": 1,
+        "outcome": "ok",
+        "created_at": "2026-11-19T09:24:44.161065Z"
+      },
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "node": "retrieve",
+        "mode": "dev",
+        "model_id": null,
+        "route": "context.dev",
+        "policy_required": "deidentified_query",
+        "evidence": {
+          "cache": "miss",
+          "error": "no_api_key",
+          "result_count": 0
+        },
+        "request_id": null,
+        "latency_ms": 0,
+        "outcome": "error",
+        "created_at": "2026-11-19T09:24:44.482206Z"
+      },
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "node": "retrieve",
+        "mode": "dev",
+        "model_id": null,
+        "route": "context.dev",
+        "policy_required": "deidentified_query",
+        "evidence": {
+          "cache": "fixture",
+          "dropped_off_allowlist": 0,
+          "result_count": 2
+        },
+        "request_id": null,
+        "latency_ms": 0,
+        "outcome": "ok",
+        "created_at": "2026-11-19T09:24:44.533284Z"
+      },
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "node": "brief",
+        "mode": "dev",
+        "model_id": "bloom-fake/offline",
+        "route": null,
+        "policy_required": "zdr",
+        "evidence": {
+          "response_id": "gen-fake-offline",
+          "finish_reason": "stop",
+          "served_model": "bloom-fake/offline"
+        },
+        "request_id": "gen-fake-offline",
+        "latency_ms": 1,
+        "outcome": "ok",
+        "created_at": "2026-11-19T09:24:44.623507Z"
+      }
+    ],
+    "attestation": {
+      "status": "unavailable",
+      "issuer": null,
+      "audience": null,
+      "verified_claims": false,
+      "fetched_at": null,
+      "error": "offline fake model (BLOOM_FAKE_MODEL=1)"
+    }
+  }
+}

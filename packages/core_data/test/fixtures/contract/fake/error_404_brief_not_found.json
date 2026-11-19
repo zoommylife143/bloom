@@ -1,0 +1,9 @@
+{
+  "method": "GET",
+  "path": "/api/sessions/8fccc466e8ac4e108c7f9ca969960a45/brief",
+  "status": 404,
+  "body": {
+    "error": "brief_not_found",
+    "detail": "No brief has been generated for this session yet"
+  }
+}

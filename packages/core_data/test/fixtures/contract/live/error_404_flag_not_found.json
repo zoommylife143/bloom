@@ -1,0 +1,9 @@
+{
+  "method": "GET",
+  "path": "/api/sessions/400ca1aa516947e892f52e133d89d090/flag",
+  "status": 404,
+  "body": {
+    "error": "flag_not_found",
+    "detail": null
+  }
+}

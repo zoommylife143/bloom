@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/demo/scenarios/S8/run",
+  "status": 200,
+  "body": {
+    "session_id": "efb744dd41f2426db12ac4cbd7670381",
+    "scenario_id": "S8",
+    "status": "urgent",
+    "turns_run": 3,
+    "brief_id": null
+  }
+}

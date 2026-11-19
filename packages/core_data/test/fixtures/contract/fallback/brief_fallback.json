@@ -1,0 +1,63 @@
+{
+  "method": "GET",
+  "path": "/api/sessions/f0f0f0f0f0f04a0b8c0d0e0f00000001/brief",
+  "status": 200,
+  "body": {
+    "brief_id": "f0f0f0f0f0f04a0b8c0d0e0f00000002",
+    "session_id": "f0f0f0f0f0f04a0b8c0d0e0f00000001",
+    "brief": {
+      "subjective": "DRAFT (automatic fallback, written without AI: the model's answer was unusable). Synthetic patient, age band 30-39, reason for visit: routine gynecology visit.",
+      "objective": "Patient-reported data only; no exam yet.",
+      "assessment_considerations": "DRAFT (automatic fallback, written without AI: the model's answer was unusable). No assessment drafted. Physician to review the intake answers.",
+      "plan_considerations": "DRAFT (automatic fallback, written without AI: the model's answer was unusable). No plan drafted. Physician to decide.",
+      "flags": [
+        "Not recorded: last_cervical_screening"
+      ],
+      "screenings_possibly_due": [
+        {
+          "text": "Retrieved guideline passage for physician review: Cervical Cancer: Screening",
+          "source_url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening"
+        }
+      ],
+      "suggested_questions": []
+    },
+    "original_brief": {
+      "subjective": "DRAFT (automatic fallback, written without AI: the model's answer was unusable). Synthetic patient, age band 30-39, reason for visit: routine gynecology visit.",
+      "objective": "Patient-reported data only; no exam yet.",
+      "assessment_considerations": "DRAFT (automatic fallback, written without AI: the model's answer was unusable). No assessment drafted. Physician to review the intake answers.",
+      "plan_considerations": "DRAFT (automatic fallback, written without AI: the model's answer was unusable). No plan drafted. Physician to decide.",
+      "flags": [
+        "Not recorded: last_cervical_screening"
+      ],
+      "screenings_possibly_due": [
+        {
+          "text": "Retrieved guideline passage for physician review: Cervical Cancer: Screening",
+          "source_url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening"
+        }
+      ],
+      "suggested_questions": []
+    },
+    "edited": false,
+    "provenance": {
+      "generated_by": "deterministic-fallback (dev)",
+      "evidence_urls": [
+        "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening"
+      ],
+      "created_at": "2026-11-19T10:00:00.000000Z",
+      "review_status": "draft",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "source": "fallback"
+    },
+    "evidence": [
+      {
+        "query": "cervical cancer screening interval age 30-39",
+        "url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening",
+        "title": "Cervical Cancer: Screening",
+        "passage": "Synthetic passage.",
+        "retrieved_at": "2026-11-19T00:00:00Z"
+      }
+    ],
+    "guideline_updates": []
+  }
+}

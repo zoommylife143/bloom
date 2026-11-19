@@ -29,7 +29,7 @@ melos:
         dirExists: test
     gen:
       description: Run build_runner (freezed, json_serializable) where it is a dependency.
-      exec: dart run build_runner build --delete-conflicting-outputs
+      exec: dart run build_runner build
       packageFilters:
         dependsOn: build_runner
     l10n:

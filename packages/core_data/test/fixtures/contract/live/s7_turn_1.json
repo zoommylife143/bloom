@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/885ef48b6f5d46a2a9ba24cc1cb89b7d/messages",
+  "status": 200,
+  "body": {
+    "reply": "Thank you for telling me. When did this heavier bleeding start?",
+    "status": "in_progress",
+    "progress": 0.2,
+    "done": false,
+    "urgent": null
+  }
+}

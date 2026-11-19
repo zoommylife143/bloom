@@ -1,0 +1,21 @@
+{
+  "method": "POST",
+  "path": "/api/login",
+  "status": 422,
+  "body": {
+    "detail": [
+      {
+        "type": "literal_error",
+        "loc": [
+          "body",
+          "role"
+        ],
+        "msg": "Input should be 'patient' or 'doctor'",
+        "input": "admin",
+        "ctx": {
+          "expected": "'patient' or 'doctor'"
+        }
+      }
+    ]
+  }
+}

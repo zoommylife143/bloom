@@ -1,0 +1,9 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/ee80cbea36d14157a62052b93510a2f2/messages",
+  "status": 502,
+  "body": {
+    "error": "confidential_route_unavailable",
+    "detail": "No route met the privacy floor. Nothing was sent elsewhere."
+  }
+}

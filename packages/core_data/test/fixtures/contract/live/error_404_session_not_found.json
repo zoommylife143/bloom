@@ -1,0 +1,9 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/does-not-exist/messages",
+  "status": 404,
+  "body": {
+    "error": "session_not_found",
+    "detail": null
+  }
+}

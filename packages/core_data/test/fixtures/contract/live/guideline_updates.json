@@ -1,0 +1,8 @@
+{
+  "method": "GET",
+  "path": "/api/guideline-updates",
+  "status": 200,
+  "body": {
+    "updates": []
+  }
+}

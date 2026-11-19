@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "path": "/api/sessions/2438eccbd0834d9dadd3fef077b267aa/messages",
+  "status": 409,
+  "body": {
+    "error": "session_locked",
+    "detail": "Session status is ready",
+    "status": "ready",
+    "urgent": null
+  }
+}

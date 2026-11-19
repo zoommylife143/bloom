@@ -1,0 +1,100 @@
+{
+  "method": "GET",
+  "path": "/api/sessions",
+  "status": 200,
+  "body": {
+    "sessions": [
+      {
+        "session_id": "efb744dd41f2426db12ac4cbd7670381",
+        "scenario_id": "S8",
+        "mode": "dev",
+        "status": "urgent",
+        "created_at": "2026-11-19T09:24:50.473410Z",
+        "updated_at": "2026-11-19T09:24:51.435233Z",
+        "red_flag_rule": "R3",
+        "brief_id": null,
+        "review_status": null,
+        "age_band": "30-39",
+        "reason_for_visit": "routine gynecology visit (offline fake model)"
+      },
+      {
+        "session_id": "bf9b96f752674cf8b0304aee5da48334",
+        "scenario_id": "S7",
+        "mode": "dev",
+        "status": "urgent",
+        "created_at": "2026-11-19T09:24:49.152706Z",
+        "updated_at": "2026-11-19T09:24:50.366965Z",
+        "red_flag_rule": "R2",
+        "brief_id": null,
+        "review_status": null,
+        "age_band": "30-39",
+        "reason_for_visit": "routine gynecology visit (offline fake model)"
+      },
+      {
+        "session_id": "24da7a895ca24df2a8a3ecd1a979106c",
+        "scenario_id": null,
+        "mode": "dev",
+        "status": "in_progress",
+        "created_at": "2026-11-19T09:24:48.501949Z",
+        "updated_at": "2026-11-19T09:24:49.018847Z",
+        "red_flag_rule": null,
+        "brief_id": null,
+        "review_status": null,
+        "age_band": null,
+        "reason_for_visit": "routine gynecology visit (offline fake model)"
+      },
+      {
+        "session_id": "76c6dde9d1484cefbb5c315983b3fd1c",
+        "scenario_id": null,
+        "mode": "dev",
+        "status": "rejected",
+        "created_at": "2026-11-19T09:24:46.658380Z",
+        "updated_at": "2026-11-19T09:24:48.403492Z",
+        "red_flag_rule": null,
+        "brief_id": "f6d1e94ec1f84259b688a6fb6254e32d",
+        "review_status": "rejected",
+        "age_band": "30-39",
+        "reason_for_visit": "routine gynecology visit (offline fake model)"
+      },
+      {
+        "session_id": "bc82e1312a0a47f485cd2e6b85c73bea",
+        "scenario_id": null,
+        "mode": "dev",
+        "status": "approved",
+        "created_at": "2026-11-19T09:24:45.003185Z",
+        "updated_at": "2026-11-19T09:24:46.564061Z",
+        "red_flag_rule": null,
+        "brief_id": "b45187350b7b439ca3687ca3d2902672",
+        "review_status": "approved",
+        "age_band": "30-39",
+        "reason_for_visit": "routine gynecology visit (offline fake model)"
+      },
+      {
+        "session_id": "2438eccbd0834d9dadd3fef077b267aa",
+        "scenario_id": "S1",
+        "mode": "dev",
+        "status": "edited",
+        "created_at": "2026-11-19T09:24:43.226905Z",
+        "updated_at": "2026-11-19T09:24:44.915570Z",
+        "red_flag_rule": null,
+        "brief_id": "563cb39d075d4b6c8020c294f0b3e3f2",
+        "review_status": "edited",
+        "age_band": "30-39",
+        "reason_for_visit": "routine gynecology visit (offline fake model)"
+      },
+      {
+        "session_id": "8fccc466e8ac4e108c7f9ca969960a45",
+        "scenario_id": null,
+        "mode": "dev",
+        "status": "in_progress",
+        "created_at": "2026-11-19T09:24:42.982550Z",
+        "updated_at": "2026-11-19T09:24:43.090949Z",
+        "red_flag_rule": null,
+        "brief_id": null,
+        "review_status": null,
+        "age_band": null,
+        "reason_for_visit": null
+      }
+    ]
+  }
+}
