@@ -1,8 +1,12 @@
+<p align="center">
+  <img src="docs/brand/zoom-my-life-logo.png" alt="Zoom My Life logo" width="180">
+</p>
+
 # Bloom: Private AI Gynecology Copilot
 
 Bloom is a privacy-first **pre-visit intake and physician-brief agent** for gynecology clinics. A patient answers a short intake chat before the appointment. Bloom turns it into a one-page physician brief with guideline citations, and the gynecologist confirms, edits or rejects every AI draft before it counts.
 
-Built for **Boat Hackathon SF 2026** (Zoom My Life).
+Built by **Zoom My Life** for **Boat Hackathon SF 2026**.
 
 > **Synthetic data only. Not a medical device. Not HIPAA compliant.** Do not enter real patient information.
 
