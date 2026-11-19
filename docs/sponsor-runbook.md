@@ -46,7 +46,7 @@ Keys live only in `.env` on the VM and on laptops. Never put them in git or chat
 
 ## 4. Teamily and LetsEncrypt.AI
 - **Teamily:** post daily status, ask Travis eligibility questions, and ask the sponsors the open questions in `docs/STATUS.md`.
-- **LetsEncrypt.AI:** use it to frame the pitch for the $1,000 prize: encrypted AI doing useful work in a real clinical flow. Show the D05 negative test live.
+- **LetsEncrypt.AI:** use it to frame the pitch for the $1,000 prize: privacy-floored AI calls (zero-data-retention route, operator-declared; provider E2EE not verified) doing useful work in a real clinical flow. Show the D05 negative test live.
 
 ## 5. Build order (maps to plan §10)
 | Day | Steps | Sponsor |
