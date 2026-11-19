@@ -19,11 +19,11 @@ Pick one in the form: **In person** or **Remote**.
 Upload `docs/submission/bloom-logo-1024.png` (1024×1024 PNG, about 54 KB; limit 4 MB).
 Fallback if the uploader wants something smaller: `docs/submission/bloom-logo-512.png`. Vector source: `docs/submission/bloom-logo.svg`.
 
-### Project link — filled after deploy
+### Project link
 ```
-<VM host URL>/intake/
+https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/
 ```
-Replace `<VM host URL>` with the public `boat host` URL of the demo VM (no trailing slash), so the result ends in `/intake/`. Open it in a private window first: A01 must load. The repo is private, so do not use the GitHub link.
+Demo fork `bx_x6rcgdqh` (snapshot `bloom-demo` of VM `bx_2dpym7ge`). Backup: https://box-node-ea80fef589949d9a-80.on.boat.dev/intake/ (the original VM). Open it in a private window first: A01 must load. The repo is private, so do not use the GitHub link.
 
 ### Demo video link — HUMAN
 YouTube (unlisted) or X link, video 2:00 or less. Record and upload with `docs/submission/demo-recording-plan.md`.
@@ -50,8 +50,8 @@ Built on a Boat.dev VM (Flutter Web, FastAPI and LangGraph, SQLite, Docker Compo
 ## Pre-submit checklist
 
 Before opening the form
-- [ ] Demo VM is up and `boat host … --public` is set; `<VM host URL>/intake/` and `/doctor/` load in a private window.
-- [ ] `server/scripts/live_check.py --base <VM host URL>` passes (S1 reaches a brief, S7 goes urgent R2).
+- [ ] Demo VM is up and `boat host … --public` is set; `https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/` and `/doctor/` load in a private window.
+- [ ] `server/scripts/live_check.py --base https://box-node-65cdd7262c0153ea-80.on.boat.dev` passes (S1 reaches a brief, S7 goes urgent R2).
 - [ ] D05 negative test shows **Refused** (not "Provider error").
 - [ ] VM won't auto-stop before judging (`--no-auto-stop` or `boat extend`).
 - [ ] Demo video is ≤ 2:00, plays signed out (unlisted YouTube or public X), and has no real names or health data.
@@ -60,7 +60,7 @@ Before opening the form
 
 In the form
 - [ ] Sign in from the **regular builder sign-in** at BoatHackathon.com/builders, **not preview mode** (saves in preview mode don't count).
-- [ ] Every field filled; no `TODO`, `<VM host URL>` or `<video link>` placeholder left anywhere.
+- [ ] Every field filled; no `TODO`, `https://box-node-65cdd7262c0153ea-80.on.boat.dev` or `<video link>` placeholder left anywhere.
 - [ ] Logo uploaded is `bloom-logo-1024.png` and the preview shows it.
 - [ ] Project link ends in `/intake/` and opens the app (not GitHub).
 - [ ] Captain's log pasted in full (check the end: "…not a medical device.").

@@ -1,15 +1,16 @@
 # Bloom: STATUS
 
-_Last updated: 2026-11-19 (session 3)_
+_Last updated: 2026-11-19 (session 4)_
 
 | Item | Value |
 | --- | --- |
 | Track | Web (ADR 0001) |
 | Product | Both: patient intake + clinic dashboard (ADR 0001) |
 | Mode | Hackathon-fast (ADR 0002) |
-| Phase | 4 Build: deployment-ready; G4 release check next |
-| Current step | All screens built in both apps; server graph + API done. 834 tests pass (server 364, patient 191, clinic 116, core_data 108, bloom_ui 35, core_domain 16, l10n 4). Docker stack smoke-tested (25/25) and live-checked (S1, S3 reach a cited brief; S7 goes urgent R2). Next: Boat VM, demo fork, submission form. |
-| Live preview | https://box-node-cc202e66068710d1-8080.on.ascii.dev/intake/ and /doctor/ (dev workspace sandbox via `host 8080 --public`; up only while that sandbox runs) |
+| Phase | 4 Build done; deployed on Boat; G4 release check written, pending srinivas |
+| Current step | Deployed: VM + demo fork pass smoke 25/25 and live check (S1, S3 cited brief; S7 urgent R2). G4 check: 834 tests pass, analyze clean, no FAIL items. Submission kit ready (docs/submission/). Next: demo video, X post, form fields, submit by Fri 2026-11-20 3:00 PM PT. |
+| Demo app (submit this) | https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ and /doctor/ (fork bx_x6rcgdqh, no auto-stop) |
+| Backup app | https://box-node-ea80fef589949d9a-80.on.boat.dev/intake/ and /doctor/ (VM bx_2dpym7ge, snapshot bloom-demo; archives 2026-11-21 09:29 UTC) |
 | Repo | https://github.com/zoommylife143/bloom (private), branch main |
 
 ## Figma
@@ -28,7 +29,7 @@ _Last updated: 2026-11-19 (session 3)_
 | G1 Design (compressed) | Approved 2026-11-16 by srinivas | docs/approvals/G1-G3-compressed.md |
 | G2 Technical design (compressed) | Approved 2026-11-16 by srinivas | docs/approvals/G1-G3-compressed.md |
 | G3 Implementation plan (compressed) | Approved 2026-11-16 by srinivas | docs/approvals/G1-G3-compressed.md |
-| G4 Release check | Not started | Submission checklist, plan section 12 |
+| G4 Release check | Written 2026-11-19, pending srinivas | docs/approvals/G4-release-check.md |
 
 ## Source documents
 - Bloom: Design and Development Plan: https://claude.ai/artifact/PbomzYRaCBPEhany86q2zN
@@ -39,9 +40,10 @@ _Last updated: 2026-11-19 (session 3)_
 ## Waiting on srinivas
 - Scope cuts in the 30-Hour Build Plan: A01 as a role picker, D04/S01 cut (still to confirm; D04 is built, S01 is a placeholder).
 - Review the post-gate Figma additions (A01, D06, S01, extra states).
-- Boat VM: `boat new --name bloom --no-auto-stop` (or `boat extend <id> --hours 48`), deploy with `scripts/deploy.sh`, `boat host <id> 80 --public`, then `boat snapshot <id> bloom-demo` and `boat fork <id> --no-auto-stop --wait` (deploy/README.md).
-- Test one slow intake through the public `boat host` URL (its proxy timeout is unknown; nginx allows 180 s, 900 s on /api/demo/).
-- Submission form: participation, logo, demo video, X post, crew, app URL (docs/submission.md).
+- Boat VM: DONE 2026-11-19. VM bx_2dpym7ge at ed6245a, snapshot bloom-demo, fork bx_x6rcgdqh (--no-auto-stop), both public on port 80.
+- Slow intake: DONE. S1 via public host, slowest turn 14.9 s, no timeout (proxy limit not reached, so still unknown above 15 s).
+- Submission form: logo, app URL, captain's log, X thread and form answers ready (docs/submission/form-answers.md). Still needed: participation, crew, demo video link, X post link, then submit.
+- Approve G4 (docs/approvals/G4-release-check.md). Suggested fix: P01 privacy line says ZDR as fact; add "operator-declared" (app_en.arb:39).
 - Rotate the TrustedRouter and Context.dev keys after the demo.
 
 ## Blockers

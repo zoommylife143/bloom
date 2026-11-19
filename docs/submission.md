@@ -10,7 +10,7 @@ Paste-ready answers and the pre-submit checklist: `docs/submission/form-answers.
 | Boat name | Bloom |
 | Participation | TODO (human): in person or remote |
 | Project logo | `docs/submission/bloom-logo-1024.png` (1024×1024 PNG, 54 KB; 512 px version and SVG source in the same folder) |
-| Project link | `<VM host URL>/intake/` — filled after deploy (the repo is private, so use the app URL) |
+| Project link | https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ (demo fork; the repo is private, so use the app URL) |
 | Demo video link | TODO (human): YouTube (unlisted) or X, 2 minutes or less |
 | X post link | TODO (human): link to post 1/ of the thread below, after posting |
 | Crew | TODO (human): names and X handles of everyone on the crew |
@@ -37,7 +37,7 @@ Character counts are X counts (a link counts as 23). Each post is under 280.
 4/ (217) Guidelines come from @getcontextdev, searched with de-identified queries built from structured fields and an allowlist of guideline sites (ACOG, USPSTF, CDC). Built and run on a @boatdotdev VM. Synthetic data only.
 
 5/ (103) 2-minute demo: `<video link>`
-Try it (synthetic data only): `<VM host URL>/intake/`
+Try it (synthetic data only): `https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/`
 
 Attach `docs/submission/bloom-logo-1024.png` (or a D02 screenshot) to post 1/.
 
