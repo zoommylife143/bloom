@@ -1,0 +1,38 @@
+{
+  "_source": "Figma file 0lWIv5IY18QemXtzP3YaTE, read with get_variable_defs on frames 6:40, 7:139, 6:125, 25:722, 6:87, 7:261 on 2026-11-19. Figma is the source of truth; update this file when Figma changes.",
+  "color": {
+    "bg/canvas": "#fbf8f4",
+    "bg/surface": "#ffffff",
+    "bg/subtle": "#f3eee7",
+    "bg/brand-subtle": "#faf4f8",
+    "bg/brand-muted": "#f3e6ef",
+    "action/primary": "#6b2d5c",
+    "action/primary-pressed": null,
+    "text/primary": "#1f1a1d",
+    "text/secondary": "#5e5560",
+    "text/on-action": "#ffffff",
+    "text/brand": "#6b2d5c",
+    "border/default": "#dcd3c8",
+    "border/brand": "#6b2d5c",
+    "status/critical": "#b42318",
+    "status/critical-subtle": "#fef3f2",
+    "status/verified": "#2f6b52",
+    "status/verified-subtle": "#e3f0e8",
+    "status/warning": "#b54708",
+    "status/warning-subtle": "#fffaeb"
+  },
+  "_null_values": "action/primary-pressed was not used on any frame read; derive it (about 12% darker than action/primary) and mark it TODO-Figma in code.",
+  "spacing": { "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 24, "2xl": 32 },
+  "radius": { "md": 12, "lg": 16, "full": 999 },
+  "radius_usage": "Patient cards use lg (16); doctor cards use md (12) (plan section 3).",
+  "textStyles": {
+    "Display":   { "family": "Fraunces", "weight": 600, "size": 32, "lineHeight": 40, "letterSpacing": 0 },
+    "Heading":   { "family": "Fraunces", "weight": 600, "size": 24, "lineHeight": 32, "letterSpacing": 0 },
+    "Title":     { "family": "DM Sans",  "weight": 600, "size": 18, "lineHeight": 26, "letterSpacing": 0 },
+    "Body":      { "family": "DM Sans",  "weight": 400, "size": 16, "lineHeight": 24, "letterSpacing": 0 },
+    "Body Small":{ "family": "DM Sans",  "weight": 400, "size": 14, "lineHeight": 20, "letterSpacing": 0 },
+    "Label":     { "family": "DM Sans",  "weight": 500, "size": 14, "lineHeight": 20, "letterSpacing": 0 },
+    "Caption":   { "family": "DM Sans",  "weight": 400, "size": 12, "lineHeight": 16, "letterSpacing": 0 },
+    "Overline":  { "family": "DM Sans",  "weight": 600, "size": 12, "lineHeight": 16, "letterSpacing": 6, "_note": "Figma letterSpacing 6 is likely percent (0.72 px at 12 px); confirm in Figma." }
+  }
+}

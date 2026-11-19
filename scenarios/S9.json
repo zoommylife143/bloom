@@ -1,0 +1,19 @@
+{
+  "id": "S9",
+  "summary": "33, two weeks postpartum, severe headache and vision changes (R4)",
+  "age_band": "30-39",
+  "turns": [
+    "I had a baby about two weeks ago and I don't feel right.",
+    "I'm 33.",
+    "I have a severe headache that won't go away and my vision is blurry, I keep seeing spots."
+  ],
+  "expected": {
+    "outcome": "urgent",
+    "rule_id": "R4",
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "30-39",
+    "pregnant_or_postpartum": "postpartum"
+  }
+}

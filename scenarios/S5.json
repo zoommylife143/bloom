@@ -1,0 +1,30 @@
+{
+  "id": "S5",
+  "summary": "30, routine visit, declines sexual-health questions",
+  "age_band": "30-39",
+  "turns": [
+    "I just need a routine well-woman visit.",
+    "I'm 30.",
+    "My periods are regular, every month or so. My last one started about 2 weeks ago.",
+    "I'd rather not answer questions about my sexual history today.",
+    "No, I'm not pregnant and I don't think I could be.",
+    "I'm not sure when my last Pap was.",
+    "I take a daily allergy pill. No drug allergies."
+  ],
+  "expected": {
+    "outcome": "brief",
+    "brief_must_include": [
+      "declined",
+      "cervical"
+    ],
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "30-39",
+    "bleeding_pattern": "regular",
+    "pregnancy_possible": "no",
+    "pregnant_or_postpartum": "neither",
+    "sti_concerns": "declined",
+    "last_pap_hpv": "unknown"
+  }
+}

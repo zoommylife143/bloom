@@ -1,0 +1,100 @@
+"""SQLite schema (plan section 6). Synthetic data only.
+
+audit_log and trust_events hold metadata only: no clinical free text.
+"""
+
+import sqlite3
+from pathlib import Path
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    scenario_id TEXT,
+    mode TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    role TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS intake_records (
+    session_id TEXT PRIMARY KEY REFERENCES sessions(id),
+    json TEXT NOT NULL,
+    completed_at TEXT
+);
+CREATE TABLE IF NOT EXISTS red_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    rule_id TEXT NOT NULL,
+    matched_fields TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS evidence (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    query TEXT NOT NULL,
+    url TEXT NOT NULL,
+    passage TEXT NOT NULL,
+    retrieved_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS briefs (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    json TEXT NOT NULL,
+    generated_by TEXT NOT NULL,
+    evidence_urls TEXT NOT NULL,
+    review_status TEXT NOT NULL DEFAULT 'draft',
+    reviewed_by TEXT,
+    reviewed_at TEXT,
+    edited_json TEXT
+);
+CREATE TABLE IF NOT EXISTS trust_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT,
+    node TEXT NOT NULL,
+    mode TEXT NOT NULL,
+    model_id TEXT,
+    route TEXT,
+    policy_required TEXT NOT NULL,
+    evidence_json TEXT NOT NULL,
+    request_id TEXT,
+    latency_ms INTEGER,
+    outcome TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor TEXT NOT NULL,
+    action TEXT NOT NULL,
+    session_id TEXT,
+    created_at TEXT NOT NULL
+);
+"""
+
+TABLES = (
+    "sessions",
+    "messages",
+    "intake_records",
+    "red_flags",
+    "evidence",
+    "briefs",
+    "trust_events",
+    "audit_log",
+)
+
+
+def connect(path: str | Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(str(path), check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def init_db(conn: sqlite3.Connection) -> None:
+    conn.executescript(SCHEMA)
+    conn.commit()

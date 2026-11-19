@@ -1,0 +1,19 @@
+{
+  "id": "S7",
+  "summary": "38, soaking a pad every hour and lightheaded (R2)",
+  "age_band": "30-39",
+  "turns": [
+    "I'm bleeding a lot more than usual.",
+    "I'm 38.",
+    "Since this morning I've been soaking through a pad every hour and I feel lightheaded."
+  ],
+  "expected": {
+    "outcome": "urgent",
+    "rule_id": "R2",
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "30-39",
+    "bleeding_pattern": "heavy"
+  }
+}

@@ -6,3 +6,5 @@ __pycache__/
 *.db
 build/
 .dart_tool/
+.pytest_cache/
+.flutter-plugins-dependencies

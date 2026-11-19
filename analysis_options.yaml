@@ -1,0 +1,9 @@
+# Root analysis options for the Flutter workspace. Each package and app
+# includes very_good_analysis directly; this file covers root-level Dart files.
+include: package:very_good_analysis/analysis_options.yaml
+analyzer:
+  exclude:
+    - server/**
+    - scenarios/**
+    - apps/**
+    - packages/**

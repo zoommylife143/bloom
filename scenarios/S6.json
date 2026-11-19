@@ -1,0 +1,21 @@
+{
+  "id": "S6",
+  "summary": "29, missed period, one-sided pelvic pain and dizziness (R1)",
+  "age_band": "25-29",
+  "turns": [
+    "I have pain low on my right side and I'm worried.",
+    "I'm 29.",
+    "My period is late. It should have come about 2 weeks ago.",
+    "I'm not sure, I could be pregnant.",
+    "The pain is sharp on my right side, about an 8 out of 10, and I feel dizzy when I stand up."
+  ],
+  "expected": {
+    "outcome": "urgent",
+    "rule_id": "R1",
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "25-29",
+    "pregnancy_possible": "unsure"
+  }
+}

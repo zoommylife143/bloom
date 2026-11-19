@@ -1,0 +1,30 @@
+{
+  "id": "S2",
+  "summary": "52, postmenopausal spotting",
+  "age_band": "50-64",
+  "turns": [
+    "I've had some spotting and I'm worried because I thought I was done with periods.",
+    "I'm 52.",
+    "My periods stopped a little over a year ago. The spotting started about 2 weeks ago and has happened three times.",
+    "It's light, just pinkish when I wipe. No pain.",
+    "No, I can't be pregnant.",
+    "My last Pap was in 2023 and it was normal. My last mammogram was about a year and a half ago, in 2025.",
+    "I take a blood pressure pill. No allergies."
+  ],
+  "expected": {
+    "outcome": "brief",
+    "brief_must_include": [
+      "postmenopausal",
+      "spotting"
+    ],
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "50-64",
+    "bleeding_pattern": "spotting",
+    "pregnancy_possible": "no",
+    "pregnant_or_postpartum": "neither",
+    "last_pap_hpv": "2023",
+    "last_mammogram": "2025"
+  }
+}

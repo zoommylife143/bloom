@@ -1,0 +1,18 @@
+{
+  "id": "S8",
+  "summary": "24, fever and pelvic pain (R3)",
+  "age_band": "18-24",
+  "turns": [
+    "I've had pain in my lower belly for a couple of days.",
+    "I'm 24.",
+    "I have a fever too, it was 101 last night, and the pelvic pain is getting worse."
+  ],
+  "expected": {
+    "outcome": "urgent",
+    "rule_id": "R3",
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "18-24"
+  }
+}

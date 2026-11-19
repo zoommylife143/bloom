@@ -1,0 +1,15 @@
+{
+  "fixture": true,
+  "note": "Hand-made fixture for S4, not a Context.dev response. Passages quoted from the public page at the URL, fetched 2026-11-19.",
+  "query": "heavy menstrual bleeding evaluation age 40-49",
+  "request_id": null,
+  "cached_at": "2026-11-19T00:00:00+00:00",
+  "results": [
+    {
+      "url": "https://www.cdc.gov/female-blood-disorders/about/heavy-menstrual-bleeding.html",
+      "title": "About Heavy Menstrual Bleeding | Bleeding Disorders in Women | CDC",
+      "passage": "Have a menstrual flow that soaks through one or more pads or tampons every hour for several hours in a row. Have a menstrual flow with blood clots the size of a quarter or larger.",
+      "retrieved_at": "2026-11-19T00:00:00+00:00"
+    }
+  ]
+}

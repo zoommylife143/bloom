@@ -1,0 +1,44 @@
+name: bloom_workspace
+description: Bloom Flutter workspace (ADR 0003). Apps in apps/, shared code in packages/.
+publish_to: none
+
+environment:
+  sdk: ^3.14.0
+
+workspace:
+  - apps/patient
+  - apps/clinic
+  - packages/bloom_ui
+  - packages/core_domain
+  - packages/core_data
+  - packages/l10n
+
+dev_dependencies:
+  melos: ^8.10.1
+
+melos:
+  repository: https://github.com/zoommylife143/bloom
+  scripts:
+    analyze:
+      description: flutter analyze in every package and app.
+      exec: flutter analyze --fatal-infos .
+    test:
+      description: flutter test in every package and app that has tests.
+      exec: flutter test
+      packageFilters:
+        dirExists: test
+    gen:
+      description: Run build_runner (freezed, json_serializable) where it is a dependency.
+      exec: dart run build_runner build --delete-conflicting-outputs
+      packageFilters:
+        dependsOn: build_runner
+    l10n:
+      description: Regenerate the l10n package from its ARB files.
+      exec: flutter gen-l10n
+      packageFilters:
+        scope: l10n
+    build:web:
+      description: Build both web apps with the nginx base hrefs.
+      run: |
+        (cd apps/patient && flutter build web --base-href /intake/) &&
+        (cd apps/clinic && flutter build web --base-href /doctor/)

@@ -1,0 +1,31 @@
+{
+  "id": "S1",
+  "summary": "34, overdue cervical screening, mild cycle irregularity",
+  "age_band": "30-39",
+  "turns": [
+    "I'd like a checkup. I think I'm overdue for a Pap smear.",
+    "I'm 34.",
+    "My last Pap was in 2019, so it's been a while. I've never had an HPV test that I know of.",
+    "My periods have been a bit irregular the last few months, sometimes 24 days apart and sometimes 38.",
+    "My last period started about 3 weeks ago.",
+    "No, I don't think I could be pregnant. We use condoms every time.",
+    "No pain, just the timing is unpredictable.",
+    "No medications and no allergies."
+  ],
+  "expected": {
+    "outcome": "brief",
+    "brief_must_include": [
+      "cervical",
+      "irregular"
+    ],
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "30-39",
+    "bleeding_pattern": "irregular",
+    "pregnancy_possible": "no",
+    "pregnant_or_postpartum": "neither",
+    "contraception": "condoms",
+    "last_pap_hpv": "2019"
+  }
+}

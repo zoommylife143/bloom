@@ -1,0 +1,21 @@
+{
+  "fixture": true,
+  "note": "Hand-made fixture for S1, not a Context.dev response. Passages quoted from the public page at the URL, fetched 2026-11-19.",
+  "query": "cervical cancer screening interval age 30-39 last test over 3 years",
+  "request_id": null,
+  "cached_at": "2026-11-19T00:00:00+00:00",
+  "results": [
+    {
+      "url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening",
+      "title": "Recommendation: Cervical Cancer: Screening | United States Preventive Services Taskforce",
+      "passage": "For women aged 30 to 65 years, the USPSTF recommends screening every 3 years with cervical cytology alone, every 5 years with high-risk human papillomavirus (hrHPV) testing alone, or every 5 years with hrHPV testing in combination with cytology (cotesting).",
+      "retrieved_at": "2026-11-19T00:00:00+00:00"
+    },
+    {
+      "url": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening",
+      "title": "Recommendation: Cervical Cancer: Screening | United States Preventive Services Taskforce",
+      "passage": "The USPSTF recommends screening for cervical cancer every 3 years with cervical cytology alone in women aged 21 to 29 years.",
+      "retrieved_at": "2026-11-19T00:00:00+00:00"
+    }
+  ]
+}

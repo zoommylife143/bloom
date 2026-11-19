@@ -1,0 +1,32 @@
+{
+  "id": "S4",
+  "summary": "45, heavy regular periods, fatigue, no fainting",
+  "age_band": "40-49",
+  "turns": [
+    "My periods have gotten really heavy and I'm tired all the time.",
+    "I'm 45.",
+    "They come every 27 or 28 days, but the first three days are very heavy. I change a pad about every 2 to 3 hours.",
+    "This has been going on for about 6 months.",
+    "No dizziness and I haven't fainted. I'm just exhausted.",
+    "I had my tubes tied years ago, so I can't get pregnant.",
+    "My last Pap was in 2022. I've never had a mammogram.",
+    "No medications and no allergies."
+  ],
+  "expected": {
+    "outcome": "brief",
+    "brief_must_include": [
+      "heavy menstrual bleeding",
+      "fatigue",
+      "mammogram"
+    ],
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "40-49",
+    "bleeding_pattern": "heavy",
+    "pregnancy_possible": "no",
+    "pregnant_or_postpartum": "neither",
+    "last_pap_hpv": "2022",
+    "last_mammogram": "never"
+  }
+}

@@ -1,0 +1,37 @@
+name: bloom_clinic
+description: Bloom clinic web app.
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+  flutter: ">=3.47.0"
+
+dependencies:
+  bloc: ^9.2.1
+  bloom_ui: any
+  core_data: any
+  core_domain: any
+  equatable: ^2.0.7
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
+  freezed_annotation: ^3.1.0
+  go_router: ^18.1.4
+  l10n: any
+  material_ui: ^1.1.0
+
+dev_dependencies:
+  bloc_test: ^10.0.0
+  build_runner: ^2.17.1
+  flutter_test:
+    sdk: flutter
+  freezed: ^4.0.3
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0
+
+flutter:
+  uses-material-design: true

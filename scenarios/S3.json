@@ -1,0 +1,35 @@
+{
+  "id": "S3",
+  "summary": "27, painful periods, contraception question",
+  "age_band": "25-29",
+  "turns": [
+    "My periods are really painful and I also want to ask about birth control.",
+    "I'm 27.",
+    "The cramps are in my lower belly, usually the first two days. I'd say about a 6 out of 10.",
+    "Ibuprofen helps a little. It's been like this for a few years.",
+    "My cycle is regular, about every 28 days. My last period started about 10 days ago.",
+    "I'm not pregnant. Right now we only use condoms, but I'm interested in the pill or an IUD.",
+    "My last Pap was in 2024 and it was fine.",
+    "No other medications and no allergies."
+  ],
+  "expected": {
+    "outcome": "brief",
+    "brief_must_include": [
+      "dysmenorrhea",
+      "contraception"
+    ],
+    "max_turns": 12
+  },
+  "expected_fields": {
+    "age_band": "25-29",
+    "bleeding_pattern": "regular",
+    "pregnancy_possible": "no",
+    "pregnant_or_postpartum": "neither",
+    "contraception": "condoms",
+    "last_pap_hpv": "2024",
+    "symptom": {
+      "severity_0_10": 6,
+      "location": "lower belly"
+    }
+  }
+}
