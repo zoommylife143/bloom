@@ -205,7 +205,7 @@ abstract class BloomLocalizations {
   /// P01 privacy point 1 in dev mode or when the mode is unknown. Literal: ZDR, not confidential.
   ///
   /// In en, this message translates to:
-  /// **'Your answers go to an AI service that does not keep them (zero data retention).'**
+  /// **'Your answers go to an AI service that says it does not keep them (zero data retention, operator-declared).'**
   String get patientWelcomePrivacyRouteDev;
 
   /// P01 privacy point 2 (de-identified guideline search).

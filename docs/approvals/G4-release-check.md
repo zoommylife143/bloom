@@ -60,7 +60,7 @@ These are human steps. The code check cannot verify them; they stay open until d
 
 ## Open issues (not blocking the code check)
 1. **Deadline:** CLAUDE.md and `docs/submission.md` now agree on Fri 3:00 PM PT; plan §12 and the organizer notes in the plan still say 5:00 PM. Work to 3:00 PM.
-2. **P01 dev-route wording** (`app_en.arb:39`): "Your answers go to an AI service that does not keep them (zero data retention)." states ZDR as fact; the route is operator-declared ZDR. Suggest "...that says it does not keep them (zero data retention, operator-declared)." Not changed here because it needs `gen-l10n` and test updates.
+2. **P01 dev-route wording** (`app_en.arb:39`): "Your answers go to an AI service that does not keep them (zero data retention)." states ZDR as fact; the route is operator-declared ZDR. Suggest "...that says it does not keep them (zero data retention, operator-declared)." Not changed here because it needs `gen-l10n` and test updates. **Done 2026-11-19 (session 5):** wording applied, l10n regenerated, patient tests pass (191).
 3. **Plan §12 positioning paragraph** still says Bloom "uses NY Token Exchange for confidential AI inference"; the demo runs in dev mode (ZDR, not confidential). Use the captain's log in `docs/submission.md`, which is accurate, not the plan's paragraph.
 4. **Private mode is not demonstrable end to end:** `PRIVATE_MODEL_ID` is empty, so private mode refuses every call (fail-closed by design). The D05 negative test is the private-AI evidence.
 5. **Red-flag keyword lists and screening wording** still need clinician review before any use beyond the demo (plan §8).

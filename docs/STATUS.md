@@ -1,6 +1,6 @@
 # Bloom: STATUS
 
-_Last updated: 2026-11-19 (session 4)_
+_Last updated: 2026-11-19 (session 5)_
 
 | Item | Value |
 | --- | --- |
@@ -8,7 +8,7 @@ _Last updated: 2026-11-19 (session 4)_
 | Product | Both: patient intake + clinic dashboard (ADR 0001) |
 | Mode | Hackathon-fast (ADR 0002) |
 | Phase | 4 Build done; deployed on Boat; G4 release check written, pending srinivas |
-| Current step | Deployed: VM + demo fork pass smoke 25/25 and live check (S1, S3 cited brief; S7 urgent R2). G4 check: 834 tests pass, analyze clean, no FAIL items. Submission kit ready (docs/submission/). Demo video recorded (docs/submission/bloom-demo.mp4); X thread posted 2026-11-19. Next: video link, X post link and remaining form fields, submit by Fri 2026-11-20 3:00 PM PT. |
+| Current step | Deployed: VM + demo fork pass smoke 25/25 and live check (S1, S3 cited brief; S7 urgent R2). G4 check: 834 tests pass, analyze clean, no FAIL items. Submission kit ready (docs/submission/). Demo video recorded (docs/submission/bloom-demo.mp4) plus a narrated version (docs/submission/bloom-demo-voiceover.mp4, submit this one); X thread posted 2026-11-19. README, partner architecture deck and Zoom My Life branding done. Next: upload the narrated video (unlisted YouTube), fill in video link, X post link and remaining form fields, submit by Fri 2026-11-20 3:00 PM PT. |
 | Demo app (submit this) | https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ and /doctor/ (fork bx_x6rcgdqh, no auto-stop) |
 | Backup app | https://box-node-ea80fef589949d9a-80.on.boat.dev/intake/ and /doctor/ (VM bx_2dpym7ge, snapshot bloom-demo; archives 2026-11-21 09:29 UTC) |
 | Repo | https://github.com/zoommylife143/bloom (private), branch main |
@@ -36,6 +36,7 @@ _Last updated: 2026-11-19 (session 4)_
 - Bloom: 30-Hour Build Plan (2026-11-19, compresses plan §10 into Thu–Fri; submit by Fri 3 PM PT): https://claude.ai/artifact/YSY9JPCHe32dBKF8a342UJ
 - Boat Hackathon: Gynecology Agent Build Plan: https://claude.ai/artifact/BKnNcJ7WdLwF25KQM7BbMk
 - Integration resources request: https://claude.ai/artifact/9ZMvemAWUq5jy21UXU8vLV
+- Bloom: Partner Architecture deck (14 slides, Zoom My Life logo, confidentiality footer on every slide; private until shared): https://claude.ai/artifact/DqvMD5Xa87sjyDZD8sVBBH
 
 ## Waiting on srinivas
 - Scope cuts in the 30-Hour Build Plan: A01 as a role picker, D04/S01 cut (still to confirm; D04 is built, S01 is a placeholder).
@@ -43,7 +44,7 @@ _Last updated: 2026-11-19 (session 4)_
 - Boat VM: DONE 2026-11-19. VM bx_2dpym7ge at ed6245a, snapshot bloom-demo, fork bx_x6rcgdqh (--no-auto-stop), both public on port 80.
 - Slow intake: DONE. S1 via public host, slowest turn 14.9 s, no timeout (proxy limit not reached, so still unknown above 15 s).
 - Submission form: logo, app URL, captain's log, X thread and form answers ready (docs/submission/form-answers.md). X thread posted 2026-11-19. Still needed: participation, crew, demo video link, X post link (to post 1/), then submit.
-- Approve G4 (docs/approvals/G4-release-check.md). Suggested fix: P01 privacy line says ZDR as fact; add "operator-declared" (app_en.arb:39).
+- Approve G4 (docs/approvals/G4-release-check.md). Its suggested P01 wording fix is DONE in the repo (session 5), but the deployed demo fork still shows the old line until it is redeployed (decide whether to redeploy before judging).
 - Rotate the TrustedRouter and Context.dev keys after the demo.
 
 ## Blockers
@@ -71,6 +72,13 @@ _Last updated: 2026-11-19 (session 4)_
 - D05 negative test live: fortanix filter gives HTTP 400 "No route candidates match", shown as Refused; a provider 5xx is shown as an error, not a refusal.
 - Contract check: docs/api-contract.md "Contract check" (fake model BLOOM_FAKE_MODEL=1, never in private mode); live check: `server/scripts/live_check.py --base <url>`.
 - Deploy: nginx-unprivileged on 8080 (host port BLOOM_HTTP_PORT, default 80), IPv4+IPv6, bundled CanvasKit (no CDN), content-hashed assets, DATABASE_URL defaults to /data/bloom.db on the volume; `scripts/deploy.sh` builds, waits for healthy and smoke-tests.
+
+## Session 5 notes (2026-11-19)
+- X thread posted by srinivas.
+- README rewritten for outside users: usage per screen, architecture, partner map, local run, config, Boat deploy, testing, API, safety rules, troubleshooting. Zoom My Life logo moved to docs/brand/zoom-my-life-logo.png and shown at the top.
+- Partner architecture deck published (link under Source documents); private until srinivas shares it.
+- Narrated demo video: docs/submission/bloom-demo-voiceover.mp4 (1:54, same captions). Voice is Piper TTS generated locally (en_US-lessac-medium); one narration line per segment explains which partner works in that step. The original silent video is kept.
+- G4 suggested fix 2 applied: P01 dev-route line now reads "Your answers go to an AI service that says it does not keep them (zero data retention, operator-declared)." (app_en.arb:39, l10n regenerated). Patient app tests: 191 pass.
 
 ## Open questions
 - NYTE: confidential model ID, per-request evidence fields, refusal error code, tool/JSON support.

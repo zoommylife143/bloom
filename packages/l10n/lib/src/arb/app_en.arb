@@ -36,7 +36,7 @@
   "@patientWelcomePrivacyTitle": {"description": "P01 privacy card title."},
   "patientWelcomePrivacyRoutePrivate": "Your answers are processed on confidential AI infrastructure.",
   "@patientWelcomePrivacyRoutePrivate": {"description": "P01 privacy point 1 when the server runs in private mode."},
-  "patientWelcomePrivacyRouteDev": "Your answers go to an AI service that does not keep them (zero data retention).",
+  "patientWelcomePrivacyRouteDev": "Your answers go to an AI service that says it does not keep them (zero data retention, operator-declared).",
   "@patientWelcomePrivacyRouteDev": {"description": "P01 privacy point 1 in dev mode or when the mode is unknown. Literal: ZDR, not confidential."},
   "patientWelcomePrivacySearch": "Guideline lookups never include your name or personal details.",
   "@patientWelcomePrivacySearch": {"description": "P01 privacy point 2 (de-identified guideline search)."},

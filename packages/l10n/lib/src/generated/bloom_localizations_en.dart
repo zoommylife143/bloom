@@ -71,7 +71,7 @@ class BloomLocalizationsEn extends BloomLocalizations {
 
   @override
   String get patientWelcomePrivacyRouteDev =>
-      'Your answers go to an AI service that does not keep them (zero data retention).';
+      'Your answers go to an AI service that says it does not keep them (zero data retention, operator-declared).';
 
   @override
   String get patientWelcomePrivacySearch =>
