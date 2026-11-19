@@ -373,6 +373,7 @@ These rules are enforced in code and must stay true in any change:
 
 | Document | Contents |
 | --- | --- |
+| [Partner architecture deck](https://claude.ai/artifact/DqvMD5Xa87sjyDZD8sVBBH) | How each partner platform is used to meet the requirements (confidential; access by invitation) |
 | `docs/STATUS.md` | Current state, gates, open questions |
 | `docs/02-app-flow.md` | Screen index with Figma node IDs |
 | `docs/api-contract.md` | Full HTTP API contract |
