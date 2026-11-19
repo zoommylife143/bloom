@@ -72,6 +72,6 @@ _Last updated: 2026-11-19 (session 3)_
 
 ## Open questions
 - NYTE: confidential model ID, per-request evidence fields, refusal error code, tool/JSON support.
-- GLM-5.3 Flash: model ID is `fortanix/glm-5.3-flash` via https://api.trustedrouter.com/v1 (checked 2026-11-19). Its route is ZDR (operator-declared), not confidential: the model page says "provider E2EE not verified". Bloom uses it for every AI call (LetsEncrypt.AI prize) and labels it ZDR in D03. Still open: which TrustedRouter route is tagged `confidential` for private mode, and the link to the OpenCode fork (the link shared points to the model page).
+- GLM-5.3 Flash: the listed model ID is `fortanix/glm-5.3-flash`, but Bloom now defaults to `z-ai/glm-5.3-flash` (see session 2 notes), both via https://api.trustedrouter.com/v1 (checked 2026-11-19). Its route is ZDR (operator-declared), not confidential: the model page says "provider E2EE not verified". Bloom uses it for every AI call (LetsEncrypt.AI prize) and labels it ZDR in D03. Still open: which TrustedRouter route is tagged `confidential` for private mode, and the link to the OpenCode fork (the link shared points to the model page).
 - Boat `host` proxy request timeout; Context.dev retention.
 - Crew ownership of workstreams A/B/C; final public name.
