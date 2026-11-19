@@ -21,12 +21,14 @@ Fallback if the uploader wants something smaller: `docs/submission/bloom-logo-51
 
 ### Project link
 ```
-https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/
+https://box-node-65cdd7262c0153ea-80.on.boat.dev/
 ```
-Demo fork `bx_x6rcgdqh` (snapshot `bloom-demo` of VM `bx_2dpym7ge`). Backup: https://box-node-ea80fef589949d9a-80.on.boat.dev/intake/ (the original VM). Open it in a private window first: A01 must load. The repo is private, so do not use the GitHub link.
+One link: a landing page with **Open patient app** (→ `/intake/`) and **Open clinic app** (→ `/doctor/`) buttons. Direct links still work: https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ and https://box-node-65cdd7262c0153ea-80.on.boat.dev/doctor/.
+
+Demo fork `bx_x6rcgdqh` (snapshot `bloom-demo` of VM `bx_2dpym7ge`), redeployed 2026-11-19 at `4727859`. Backup: https://box-node-ea80fef589949d9a-80.on.boat.dev/ (the original VM, same landing page). Open it in a private window first: the landing page and both buttons must work. The repo is private, so do not use the GitHub link.
 
 ### Demo video link — HUMAN
-YouTube (unlisted) or X link, video 2:00 or less. Record and upload with `docs/submission/demo-recording-plan.md`.
+YouTube (unlisted) or X link, video 2:00 or less. Upload `docs/submission/bloom-demo-voiceover.mp4` (1:54, captions + narration). The narration text is in `docs/submission/voiceover-script.md`.
 
 ### X post link — HUMAN
 Post the thread in `docs/submission.md` → "X post (thread)" from the team's X account, then paste the link to post 1/ (`https://x.com/<handle>/status/<id>`).
@@ -45,12 +47,12 @@ Three things make it different:
 
 Built on a Boat.dev VM (Flutter Web, FastAPI and LangGraph, SQLite, Docker Compose). All demo data is synthetic. Bloom is a hackathon prototype, not a medical device.
 ```
-(Plain text without `**` bold, in case the form doesn't render Markdown. If it does, paste the version in `docs/submission.md`.)
+(Plain text without `**` bold, in case the form doesn't render Markdown. If it does, paste the version in `docs/submission.md`. A longer version written as a captain's log, with each partner's role, is in `docs/submission/captains-log.md`.)
 
 ## Pre-submit checklist
 
 Before opening the form
-- [ ] Demo VM is up and `boat host … --public` is set; `https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/` and `/doctor/` load in a private window.
+- [ ] Demo VM is up and `boat host … --public` is set; `https://box-node-65cdd7262c0153ea-80.on.boat.dev/` shows the landing page, and its Patient and Doctor buttons open `/intake/` and `/doctor/` in a private window.
 - [ ] `server/scripts/live_check.py --base https://box-node-65cdd7262c0153ea-80.on.boat.dev` passes (S1 reaches a brief, S7 goes urgent R2).
 - [ ] D05 negative test shows **Refused** (not "Provider error").
 - [ ] VM won't auto-stop before judging (`--no-auto-stop` or `boat extend`).
@@ -60,9 +62,9 @@ Before opening the form
 
 In the form
 - [ ] Sign in from the **regular builder sign-in** at BoatHackathon.com/builders, **not preview mode** (saves in preview mode don't count).
-- [ ] Every field filled; no `TODO`, `https://box-node-65cdd7262c0153ea-80.on.boat.dev` or `<video link>` placeholder left anywhere.
+- [ ] Every field filled; no `TODO`, `<VM host URL>` or `<video link>` placeholder left anywhere.
 - [ ] Logo uploaded is `bloom-logo-1024.png` and the preview shows it.
-- [ ] Project link ends in `/intake/` and opens the app (not GitHub).
+- [ ] Project link is `https://box-node-65cdd7262c0153ea-80.on.boat.dev/` and opens the landing page (not GitHub).
 - [ ] Captain's log pasted in full (check the end: "…not a medical device.").
 - [ ] Click Submit, then reload the page and confirm the submission shows as submitted (not a draft).
 - [ ] Screenshot the confirmation; note the time (must be before 3:00 PM PT, Fri 2026-11-20).

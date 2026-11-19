@@ -10,7 +10,7 @@ Paste-ready answers and the pre-submit checklist: `docs/submission/form-answers.
 | Boat name | Bloom |
 | Participation | TODO (human): in person or remote |
 | Project logo | `docs/submission/bloom-logo-1024.png` (1024×1024 PNG, 54 KB; 512 px version and SVG source in the same folder) |
-| Project link | https://box-node-65cdd7262c0153ea-80.on.boat.dev/intake/ (demo fork; the repo is private, so use the app URL) |
+| Project link | https://box-node-65cdd7262c0153ea-80.on.boat.dev/ (landing page with Patient and Doctor buttons; demo fork; the repo is private, so use the app URL) |
 | Demo video link | TODO (human): YouTube (unlisted) or X, 2 minutes or less |
 | X post link | TODO (human): link to post 1/ of the thread below, after posting |
 | Crew | TODO (human): names and X handles of everyone on the crew |
