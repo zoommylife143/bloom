@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloom · Private AI gynecology copilot</title>
+<meta name="description" content="Bloom: a private AI copilot for gynecology visits, by Zoom My Life. Choose the patient or the clinician app.">
+<link rel="icon" href="bloom-logo.svg" type="image/svg+xml">
+<style>
+  :root {
+    --canvas: #fbf8f4; --surface: #ffffff; --subtle: #f3eee7; --plum: #6b2d5c; --plum-dark: #4f2044;
+    --plum-tint: #f3e6ef; --green: #2f6b52; --green-tint: #e3f0e8; --ink: #1f1a1d; --ink-soft: #5e5560; --line: #dcd3c8;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100vh; background: var(--canvas); color: var(--ink);
+    font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex; flex-direction: column; align-items: center; padding: 40px 16px 24px;
+  }
+  main { width: 100%; max-width: 880px; flex: 1; display: flex; flex-direction: column; gap: 32px; }
+  header { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+  .logo { width: 96px; height: 96px; border-radius: 20px; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 5.5vw, 44px); line-height: 1.15; font-weight: 600; max-width: 720px; }
+  .lede { color: var(--ink-soft); max-width: 600px; }
+  .notice {
+    align-self: center; background: #fffaeb; color: #7a2e0e; border: 1px solid #f5d38a;
+    border-radius: 999px; padding: 6px 16px; font-size: 14px; font-weight: 600; text-align: center;
+  }
+  .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  a.choice {
+    display: flex; flex-direction: column; gap: 10px; padding: 28px; border-radius: 20px; text-decoration: none;
+    color: var(--ink); background: var(--surface); border: 2px solid var(--line);
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+  }
+  a.choice:hover { border-color: var(--plum); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79, 32, 68, .12); }
+  a.choice:focus-visible { outline: 3px solid var(--plum); outline-offset: 3px; }
+  .tag { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--plum); }
+  .doctor .tag { color: var(--green); }
+  .choice h2 { font-family: Georgia, "Times New Roman", serif; font-size: 28px; line-height: 1.2; font-weight: 600; }
+  .choice p { color: var(--ink-soft); flex: 1; }
+  .cta {
+    align-self: flex-start; margin-top: 8px; padding: 12px 22px; border-radius: 999px;
+    background: var(--plum); color: #fbf8f4; font-weight: 700;
+  }
+  .doctor .cta { background: var(--green); }
+  footer {
+    width: 100%; max-width: 880px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    color: var(--ink-soft); font-size: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand img { width: 44px; height: 44px; object-fit: contain; }
+  @media (prefers-reduced-motion: reduce) { a.choice { transition: none; } a.choice:hover { transform: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img class="logo" src="bloom-logo.svg" alt="Bloom" width="96" height="96">
+    <h1>A private AI copilot for gynecology visits</h1>
+    <p class="lede">Patients tell their story before the appointment; the doctor gets a cited one-page brief to confirm, edit or reject.</p>
+  </header>
+
+  <p class="notice">Demo with synthetic data only. Please don’t enter real health information.</p>
+
+  <nav class="choices" aria-label="Choose an app">
+    <a class="choice patient" href="/intake/">
+      <span class="tag">Patient</span>
+      <h2>Start your intake</h2>
+      <p>Answer a few questions before your visit, one at a time. You can skip any question.</p>
+      <span class="cta">Open patient app →</span>
+    </a>
+    <a class="choice doctor" href="/doctor/">
+      <span class="tag">Doctor</span>
+      <h2>Open the clinic dashboard</h2>
+      <p>See the patient queue, red flags, physician briefs with guideline citations, and the Privacy &amp; Trust panel.</p>
+      <span class="cta">Open clinic app →</span>
+    </a>
+  </nav>
+</main>
+
+<footer>
+  <span class="brand"><img src="zoom-my-life-logo.png" alt="Zoom My Life logo" width="44" height="44"> Built by Zoom My Life · Boat Hackathon SF 2026</span>
+  <span>Hackathon prototype · Not a medical device</span>
+</footer>
+</body>
+</html>

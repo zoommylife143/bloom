@@ -90,6 +90,7 @@ COPY deploy/nginx.conf /etc/nginx/conf.d/bloom.conf
 COPY deploy/nginx-security-headers.conf /etc/nginx/snippets/bloom-security-headers.conf
 COPY --from=build /src/apps/patient/build/web /usr/share/nginx/html/intake
 COPY --from=build /src/apps/clinic/build/web /usr/share/nginx/html/doctor
+COPY deploy/landing/ /usr/share/nginx/html/
 USER 101
 # Validate the config at build time; drop the pid file so the runtime nginx can create it.
 RUN nginx -t && rm -f /tmp/nginx.pid

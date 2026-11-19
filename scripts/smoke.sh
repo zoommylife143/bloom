@@ -4,7 +4,7 @@
 #   BASE_URL=https://x.example scripts/smoke.sh
 # Checks: /api/healthz, login, create session, one message, /intake/, /doctor/,
 # SPA deep-link fallback, cache headers (index no-cache, hashed JS immutable), gzip,
-# CanvasKit served locally (no CDN), security headers and the relative / redirect.
+# CanvasKit served locally (no CDN), security headers and the / landing page.
 # Exits non-zero on any failure.
 # The message step may return 502 ONLY when healthz says TrustedRouter is not
 # configured (no keys in .env); that is reported as a warning, not a pass.
@@ -136,10 +136,17 @@ for app in intake doctor; do
   if [[ "$code" == 200 ]]; then pass "GET /$app/canvaskit/canvaskit.wasm (served locally)"; else note "/$app/canvaskit/canvaskit.wasm -> $code (CanvasKit not bundled; the app needs the gstatic CDN)"; fi
 done
 
-# 6. root redirect (must be relative so it works behind any host, port or HTTPS tunnel)
-loc="$(curl -sS -o /dev/null -D - "$BASE_URL/" | tr -d '\r' | grep -i '^location:' | sed 's/^[^:]*:[[:space:]]*//' | head -n1 || true)"
-status="$(curl -sS -o /dev/null -w '%{http_code}' "$BASE_URL/" || true)"
-if [[ "$status" == 302 && "$loc" == "/intake/" ]]; then pass "GET / -> 302 /intake/ (relative)"; else bad "GET / -> $status Location: $loc (want 302 /intake/)"; fi
+# 6. landing page at / with relative links to both apps (works behind any host, port or HTTPS tunnel)
+status="$(curl -sS -o "$TMP/landing" -w '%{http_code}' "$BASE_URL/" || true)"
+if [[ "$status" == 200 ]] && grep -q 'href="/intake/"' "$TMP/landing" && grep -q 'href="/doctor/"' "$TMP/landing"; then
+  pass "GET / -> 200 landing page linking /intake/ and /doctor/"
+else
+  bad "GET / -> $status (want 200 landing page with links to /intake/ and /doctor/)"
+fi
+for asset in bloom-logo.svg zoom-my-life-logo.png; do
+  code="$(curl -sS -o /dev/null -w '%{http_code}' "$BASE_URL/$asset" || echo 000)"
+  if [[ "$code" == 200 ]]; then pass "GET /$asset"; else bad "GET /$asset -> $code"; fi
+done
 
 echo
 if [[ "$fail" != 0 ]]; then echo "SMOKE: FAILED"; exit 1; fi
