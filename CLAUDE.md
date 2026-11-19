@@ -1,6 +1,6 @@
 # Bloom: Private AI Gynecology Copilot
 
-Boat Hackathon SF 2026 (Zoom My Life). The final submission deadline is Fri 2026-11-20, 5:00 PM PT.
+Boat Hackathon SF 2026 (Zoom My Life). The final submission deadline is Fri 2026-11-20, 3:00 PM PT (moved up from 5:00 PM on 2026-11-19).
 
 ## Source of truth
 - Plan: "Bloom: Design and Development Plan" (https://claude.ai/artifact/PbomzYRaCBPEhany86q2zN). It stands in for docs 01–12 in hackathon-fast mode (ADR 0002).
