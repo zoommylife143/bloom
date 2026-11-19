@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS evidence (
     session_id TEXT NOT NULL REFERENCES sessions(id),
     query TEXT NOT NULL,
     url TEXT NOT NULL,
+    title TEXT,
     passage TEXT NOT NULL,
     retrieved_at TEXT NOT NULL
 );
@@ -74,6 +75,15 @@ CREATE TABLE IF NOT EXISTS audit_log (
     session_id TEXT,
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS guideline_updates (
+    id TEXT PRIMARY KEY,
+    url TEXT NOT NULL,
+    title TEXT,
+    detected_at TEXT NOT NULL,
+    change_summary TEXT NOT NULL,
+    monitor_id TEXT
+);
+CREATE INDEX IF NOT EXISTS guideline_updates_detected ON guideline_updates (detected_at);
 """
 
 TABLES = (
@@ -85,6 +95,7 @@ TABLES = (
     "briefs",
     "trust_events",
     "audit_log",
+    "guideline_updates",
 )
 
 
@@ -97,4 +108,7 @@ def connect(path: str | Path) -> sqlite3.Connection:
 
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(evidence)")}
+    if "title" not in cols:  # databases created before the title column
+        conn.execute("ALTER TABLE evidence ADD COLUMN title TEXT")
     conn.commit()

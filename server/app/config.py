@@ -26,6 +26,9 @@ class Settings(BaseSettings):
 
     context_dev_api_key: str = ""
     guideline_domains: str = "acog.org,uspreventiveservicestaskforce.org,cdc.gov"
+    # Monitor webhook signing secret(s) (webhook.secret from POST /v1/monitors), comma-separated.
+    # Empty -> the webhook answers 503 (fails closed).
+    context_dev_webhook_secret: str = ""
 
     database_url: str = "sqlite:///./bloom.db"
     demo_login_secret: str = ""

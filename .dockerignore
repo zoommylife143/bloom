@@ -1,0 +1,23 @@
+# Shared by server/Dockerfile and deploy/web.Dockerfile (both use the repo root as context).
+# Never send secrets into a build context.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+.git
+.claude
+docs
+**/__pycache__
+**/*.pyc
+**/.venv
+**/.pytest_cache
+**/*.db
+**/*.db-journal
+
+**/build
+**/.dart_tool
+**/.flutter-plugins-dependencies
+**/coverage
