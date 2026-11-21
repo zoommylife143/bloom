@@ -48,6 +48,9 @@
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
     color: var(--ink-soft); font-size: 14px;
   }
+  .pitch { align-self: center; color: var(--plum); font-weight: 700; text-decoration: none; border: 2px solid var(--plum); border-radius: 999px; padding: 10px 22px; }
+  .pitch:hover { background: var(--plum-tint); }
+  .pitch:focus-visible { outline: 3px solid var(--plum); outline-offset: 3px; }
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand img { width: 44px; height: 44px; object-fit: contain; }
   @media (prefers-reduced-motion: reduce) { a.choice { transition: none; } a.choice:hover { transform: none; } }
@@ -77,6 +80,8 @@
       <span class="cta">Open clinic app →</span>
     </a>
   </nav>
+
+  <a class="pitch" href="/pitch/">View the pitch deck →</a>
 </main>
 
 <footer>
